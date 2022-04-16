@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class DatabaseConnection {
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres?currentSchema=public";
     private static final String USER = "postgres";
     private static final String PASSWORD = "postgres";
 
