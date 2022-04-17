@@ -3,37 +3,58 @@ package com.flowersAndGifts.model;
 import java.util.Objects;
 
 public class User {
-    private long id;
+    private Long id;
     private String email;
     private String password;
     private String firstname;
     private String lastname;
     private Role role;
+    private boolean active = true;
 
     public User() {
     }
 
-    public User(long id, String email, String firstname, String lastname, Role role) {
+    public User(Long id, String email, String password, String firstname, String lastname, Role role, Boolean active) {
         this.id = id;
-        this.email = email;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.role = role;
-    }
-
-    public User(String email, String password, String firstname, String lastname, Role role) {
         this.email = email;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
         this.role = role;
+        this.active = active;
     }
 
-    public long getId() {
+    public User(String email, String password, String firstname, String lastname, Role role, Boolean active) {
+        this.email = email;
+        this.password = password;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(Long id, String email, String firstname, String lastname, Role role, boolean active) {
+        this.id = id;
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(String email, String firstname, String lastname, Role role, boolean active) {
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -77,17 +98,25 @@ public class User {
         this.role = role;
     }
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return id == user.id && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && role == user.role;
+        return Objects.equals(id, user.id) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && role == user.role && Objects.equals(active, user.active);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, password, firstname, lastname, role);
+        return Objects.hash(id, email, password, firstname, lastname, role, active);
     }
 
     @Override
@@ -99,6 +128,7 @@ public class User {
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", role=" + role +
+                ", active=" + active +
                 '}';
     }
 }

@@ -18,7 +18,9 @@ public interface UserDao {
 
     User updateUserPassword(User user) throws DaoException;
 
+    User updateUserActive(User user) throws DaoException;
+
     void deleteUserById(Long id) throws DaoException;
 
-    void rollback() throws DaoException;
+    void deleteUserByEmail(String email) throws DaoException;
 }

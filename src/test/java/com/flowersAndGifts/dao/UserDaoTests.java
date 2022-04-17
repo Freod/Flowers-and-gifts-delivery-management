@@ -1,8 +1,11 @@
 package com.flowersAndGifts.dao;
 
+import com.flowersAndGifts.dao.impl.UserDaoImpl;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.model.Role;
 import com.flowersAndGifts.model.User;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,147 +14,97 @@ import static org.junit.Assert.*;
 
 public class UserDaoTests {
     private UserDao userDao;
-    private final User user = new User("test", "test", "test", "test", Role.CUSTOMER);
+    private final User user = new User("test", "test", "test", "test", Role.CUSTOMER, true);
 
+    @Before
+    public void setUp(){
+        //TODO:TRANSACTION
+        userDao = new UserDaoImpl();
+    }
+    
     @Test
-    public void testInsertDeleteUser() throws Exception {
-        userDao = new UserDaoImpl(false);
-
+    public void testUserDao() throws Exception {
         List<User> expectedList1 = userDao.selectAllUsers();
-        User insertedUser = userDao.insertUser(user);
+        User user1 = userDao.insertUser(user);
         List<User> actualList1 = userDao.selectAllUsers();
 
-        assertEquals(user.getEmail(), insertedUser.getEmail());
         assertNotEquals(expectedList1, actualList1);
+        assertNotNull(user1.getId());
+        assertTrue(user.equals(user1));
 
         try {
             userDao.insertUser(user);
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("User with this email already exist."));
-            assertEquals(e.getClass(), DaoException.class);
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this email does already exist."));
         }
 
-        List<User> expectedList2 = userDao.selectAllUsers();
+        User user2 = userDao.selectUserById(user1.getId());
+        assertFalse(user1.equals(user2));
+        assertEquals(user1.getId(), user2.getId());
+        User user3 = userDao.selectUserByEmail(user1.getEmail());
+        assertTrue(user2.equals(user3));
+        User user4 = userDao.selectUserByEmailAndPassword(user1.getEmail(), user.getPassword());
+        assertTrue(user2.equals(user4));
+
+        user2.setPassword("test2");
+        userDao.updateUserPassword(user2);
+        User user5 = userDao.selectUserByEmailAndPassword(user2.getEmail(), user2.getPassword());
+        assertTrue(user3.equals(user5));
+        user5.setActive(false);
+        userDao.updateUserActive(user5);
+        User user6 = userDao.selectUserByEmail(user1.getEmail());
+        assertTrue(user5.equals(user6));
+
+        userDao.deleteUserById(user6.getId());
         List<User> actualList2 = userDao.selectAllUsers();
-
-        assertNotEquals(expectedList1, actualList2);
-        assertEquals(expectedList2, actualList2);
-
-        userDao.deleteUserById(insertedUser.getId());
-
-        List<User> actualList3 = userDao.selectAllUsers();
-        assertEquals(expectedList1, actualList3);
-        assertNotEquals(expectedList2, actualList3);
+        assertEquals(expectedList1, actualList2);
 
         try {
-            userDao.deleteUserById(insertedUser.getId());
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("User with this id not exist."));
-            assertEquals(e.getClass(), DaoException.class);
+            userDao.deleteUserById(user6.getId());
+        }catch (Exception e){
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this id does not exist."));
         }
 
-        List<User> actualList4 = userDao.selectAllUsers();
-        assertEquals(expectedList1, actualList4);
-        assertNotEquals(expectedList2, actualList4);
-
-        userDao.rollback();
-    }
-
-    @Test
-    public void testUpdateUser() throws Exception {
-        userDao = new UserDaoImpl(false);
-
-        List<User> expectedList = userDao.selectAllUsers();
-        User insertedUser = userDao.insertUser(user);
-        User expected1 = insertedUser;
-        List<User> actualList = userDao.selectAllUsers();
-
-        assertNotEquals(expectedList, actualList);
-        assertEquals(user, insertedUser);
-
-        User actual1 = userDao.selectUserByEmailAndPassword(user.getEmail(), user.getPassword());
-        User expected2 = actual1;
-        assertEquals(expected1.getId(), actual1.getId());
-
-        insertedUser.setPassword("test2");
-        userDao.updateUserPassword(insertedUser);
-
-        User actual2 = userDao.selectUserByEmailAndPassword(insertedUser.getEmail(), "test2");
-
-        assertEquals(expected1.getId(), actual2.getId());
-        assertEquals(expected2.getId(), actual2.getId());
-
         try {
-            userDao.selectUserByEmailAndPassword(actual1.getEmail(), "test");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("User with this email and password not exist."));
-            assertEquals(e.getClass(), DaoException.class);
+            userDao.selectUserById(user1.getId());
+        }catch (Exception e){
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this id does not exist."));
         }
 
         List<User> expectedList2 = userDao.selectAllUsers();
-        userDao.deleteUserById(insertedUser.getId());
-        actualList = userDao.selectAllUsers();
-        assertEquals(expectedList, actualList);
-        assertNotEquals(expectedList2, actualList);
+        userDao.insertUser(user);
+        userDao.deleteUserByEmail(user.getEmail());
+        List<User> actualList3 = userDao.selectAllUsers();
+        assertEquals(expectedList2, actualList3);
 
-        insertedUser.setPassword("test");
         try {
-            userDao.updateUserPassword(insertedUser);
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("User with this email not exist."));
-            assertEquals(e.getClass(), DaoException.class);
+            userDao.deleteUserByEmail(user.getEmail());
+        }catch (Exception e){
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this email does not exist."));
         }
 
-        userDao.rollback();
+        try{
+            userDao.selectUserByEmail(user1.getEmail());
+        }catch (Exception e){
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this email does not exist."));
+        }
+
+        try {
+            userDao.selectUserByEmailAndPassword(user1.getEmail(), user.getPassword());
+        }catch (Exception e){
+            assertTrue(e.getClass().equals(DaoException.class));
+            assertTrue(e.getMessage().equals("User with this email does not exist."));
+        }
     }
 
-    @Test
-    public void testSelectUser() throws Exception {
-        userDao = new UserDaoImpl(false);
-
-        List<User> expectedList = userDao.selectAllUsers();
-
-        User insertedUser = userDao.insertUser(user);
-
-        List<User> actualList = userDao.selectAllUsers();
-
-        assertNotEquals(expectedList, actualList);
-
-        User actual1 = userDao.selectUserById(insertedUser.getId());
-        User actual2 = userDao.selectUserByEmail(insertedUser.getEmail());
-        User actual3 = userDao.selectUserByEmailAndPassword(insertedUser.getEmail(), insertedUser.getPassword());
-
-        assertEquals(insertedUser.getId(), actual1.getId());
-        assertEquals(insertedUser.getEmail(), actual1.getEmail());
-        assertEquals(insertedUser.getId(), actual2.getId());
-        assertEquals(insertedUser.getEmail(), actual2.getEmail());
-        assertEquals(insertedUser.getId(), actual3.getId());
-        assertEquals(insertedUser.getEmail(), actual3.getEmail());
-
-        userDao.deleteUserById(insertedUser.getId());
-
-        actualList = userDao.selectAllUsers();
-        assertEquals(expectedList, actualList);
-
-        try {
-            userDao.selectUserById(insertedUser.getId());
-        } catch (Exception e) {
-            assertEquals(e.getClass(), DaoException.class);
-            assertTrue(e.getMessage().contains("User with this id not exist."));
-        }
-        try {
-            userDao.selectUserByEmail(insertedUser.getEmail());
-        } catch (Exception e) {
-            assertEquals(e.getClass(), DaoException.class);
-            assertTrue(e.getMessage().contains("User with this email not exist."));
-        }
-        try {
-            userDao.selectUserByEmailAndPassword(insertedUser.getEmail(), insertedUser.getPassword());
-        } catch (Exception e) {
-            assertEquals(e.getClass(), DaoException.class);
-            assertTrue(e.getMessage().contains("User with this email and password not exist."));
-        }
-
-        userDao.rollback();
+    @After
+    public void endTests(){
+        //TODO:ROLLBACK
+        System.out.println(":)");
     }
 }

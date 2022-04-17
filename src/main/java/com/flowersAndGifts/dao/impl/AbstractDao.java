@@ -1,7 +1,6 @@
-package com.flowersAndGifts.dao;
+package com.flowersAndGifts.dao.impl;
 
 import com.flowersAndGifts.database.DatabaseConnection;
-import com.flowersAndGifts.exception.DaoException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,35 +9,14 @@ import java.util.List;
 
 public abstract class AbstractDao {
     private final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
+    public Connection connection;
 
-    protected Connection getConnection(final boolean autoCommitStatus) throws DaoException{
-        Connection connection;
+    public AbstractDao() {
+        //TODO:change it
         try {
-            connection = databaseConnection.createConnection();
-            connection.setAutoCommit(autoCommitStatus);
-            return connection;
-        }
-        catch (SQLException e){
-            throw new DaoException(e);
-        }
-    }
-
-    protected void closeConnection(Connection connection) throws DaoException {
-        try {
-            connection.close();
-        }
-        catch (SQLException e){
-            throw new DaoException(e);
-        }
-    }
-
-    protected void rollbackConnection(Connection connection) throws DaoException{
-        try {
-            connection.rollback();
-            connection.close();
-        }
-        catch (SQLException e){
-            throw new DaoException(e);
+            this.connection = databaseConnection.createConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -66,6 +44,9 @@ public abstract class AbstractDao {
         }
         else if(Boolean.class == parameter.getClass()){
             preparedStatement.setBoolean(index, (Boolean) parameter);
+        }
+        else if(Double.class == parameter.getClass()){
+            preparedStatement.setDouble(index, (Double) parameter);
         }
     }
 }
