@@ -10,9 +10,9 @@ public interface ProductDao {
 
     Product selectProductByName(String name) throws DaoException;
 
-    List<Product> selectAllProducts() throws DaoException;
+    List<Product> selectAllProducts();
 
-    List<Product> selectAllActiveProducts() throws DaoException;
+    List<Product> selectAllActiveProducts();
 
     Product insertProduct(Product product) throws DaoException;
 

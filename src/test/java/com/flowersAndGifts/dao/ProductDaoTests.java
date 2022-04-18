@@ -16,13 +16,12 @@ public class ProductDaoTests {
 
     @Before
     public void setUp(){
-        //TODO:TRANSACTION
+        //TODO:SET TEST DB
         productDao = new ProductDaoImpl();
     }
 
     @Test
     public void testProductDao() throws Exception{
-        //TODO:TESTS
         List<Product> expectedList = productDao.selectAllProducts();
         Product dbProduct = productDao.insertProduct(product);
         List<Product> selectList1 = productDao.selectAllProducts();
@@ -97,7 +96,6 @@ public class ProductDaoTests {
 
     @Before
     public void endTests(){
-        //TODO:ROLLBACK
-        System.out.println(":)");
+        //TODO:CLEAR DB
     }
 }

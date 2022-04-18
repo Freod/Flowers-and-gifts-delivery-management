@@ -4,10 +4,7 @@ import com.flowersAndGifts.dao.ProductDao;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.model.Product;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,21 +32,23 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
     private Product getProduct(String selectProductQuery, List<Object> parameter) throws DaoException {
         Product product;
 
-        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectProductQuery, parameter)) {
-            try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
-                if (selectResultSet.next()) {
-                    product = new Product(
-                            selectResultSet.getLong("ID"),
-                            selectResultSet.getString("NAME"),
-                            selectResultSet.getDouble("PRICE"),
-                            selectResultSet.getString("IMAGE"),
-                            selectResultSet.getBoolean("ACTIVE")
-                    );
-                } else {
-                    if (parameter.get(0).getClass() == Long.class) {
-                        throw new DaoException("Product with this id does not exist.");
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectProductQuery, parameter)) {
+                try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
+                    if (selectResultSet.next()) {
+                        product = new Product(
+                                selectResultSet.getLong("ID"),
+                                selectResultSet.getString("NAME"),
+                                selectResultSet.getDouble("PRICE"),
+                                selectResultSet.getString("IMAGE"),
+                                selectResultSet.getBoolean("ACTIVE")
+                        );
                     } else {
-                        throw new DaoException("Product with this name does not exist.");
+                        if (parameter.get(0).getClass() == Long.class) {
+                            throw new DaoException("Product with this id does not exist.");
+                        } else {
+                            throw new DaoException("Product with this name does not exist.");
+                        }
                     }
                 }
             }
@@ -61,30 +60,32 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
     }
 
     @Override
-    public List<Product> selectAllProducts() throws DaoException {
+    public List<Product> selectAllProducts() {
         return getAllProducts(SELECT_ALL_PRODUCTS_QUERY);
     }
 
     @Override
-    public List<Product> selectAllActiveProducts() throws DaoException {
+    public List<Product> selectAllActiveProducts() {
         return getAllProducts(SELECT_ALL_ACTIVE_PRODUCTS_QUERY);
     }
 
     private List<Product> getAllProducts(String selectAllProductsQuery) {
         List<Product> products = new ArrayList<>();
 
-        try (Statement statement = connection.createStatement()) {
-            try (ResultSet selectResultSet = statement.executeQuery(selectAllProductsQuery)) {
-                while (selectResultSet.next()) {
-                    Product product = new Product(
-                            selectResultSet.getLong("ID"),
-                            selectResultSet.getString("NAME"),
-                            selectResultSet.getDouble("PRICE"),
-                            selectResultSet.getString("IMAGE"),
-                            selectResultSet.getBoolean("ACTIVE")
-                    );
+        try (Connection connection = getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet selectResultSet = statement.executeQuery(selectAllProductsQuery)) {
+                    while (selectResultSet.next()) {
+                        Product product = new Product(
+                                selectResultSet.getLong("ID"),
+                                selectResultSet.getString("NAME"),
+                                selectResultSet.getDouble("PRICE"),
+                                selectResultSet.getString("IMAGE"),
+                                selectResultSet.getBoolean("ACTIVE")
+                        );
 
-                    products.add(product);
+                        products.add(product);
+                    }
                 }
             }
         } catch (SQLException exception) {
@@ -103,17 +104,19 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 product.isActive()
         );
 
-        try (PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()))) {
-            try (ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery()) {
-                try (PreparedStatement insertPreparedStatement = getPreparedStatement(connection, INSERT_PRODUCT_QUERY, parameters)) {
-                    if (!selectNameResultSet.next()) {
-                        try (ResultSet insertResultSet = insertPreparedStatement.executeQuery()) {
-                            if (insertResultSet.next()) {
-                                product.setId(insertResultSet.getLong("ID"));
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()))) {
+                try (ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery()) {
+                    try (PreparedStatement insertPreparedStatement = getPreparedStatement(connection, INSERT_PRODUCT_QUERY, parameters)) {
+                        if (!selectNameResultSet.next()) {
+                            try (ResultSet insertResultSet = insertPreparedStatement.executeQuery()) {
+                                if (insertResultSet.next()) {
+                                    product.setId(insertResultSet.getLong("ID"));
+                                }
                             }
+                        } else {
+                            throw new DaoException("Product with this name does already exist.");
                         }
-                    } else {
-                        throw new DaoException("Product with this name does already exist.");
                     }
                 }
             }
@@ -135,20 +138,21 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 product.getId()
         );
 
-        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_ID_QUERY, Collections.singletonList(product.getId()))) {
-            try (PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()))) {
-                try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
-                    try (ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery()) {
-                        try (PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_PRODUCT_QUERY, parameters)) {
-                            if (selectResultSet.next()) {
-                                if(!selectNameResultSet.next()) {
-                                    updatePreparedStatement.execute();
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_ID_QUERY, Collections.singletonList(product.getId()))) {
+                try (PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()))) {
+                    try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
+                        try (ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery()) {
+                            try (PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_PRODUCT_QUERY, parameters)) {
+                                if (selectResultSet.next()) {
+                                    if (!selectNameResultSet.next()) {
+                                        updatePreparedStatement.execute();
+                                    } else {
+                                        throw new DaoException("Product with this name does already exist.");
+                                    }
+                                } else {
+                                    throw new DaoException("Product with this id does not exist.");
                                 }
-                                else{
-                                    throw new DaoException("Product with this name does already exist.");
-                                }
-                            } else {
-                                throw new DaoException("Product with this id does not exist.");
                             }
                         }
                     }

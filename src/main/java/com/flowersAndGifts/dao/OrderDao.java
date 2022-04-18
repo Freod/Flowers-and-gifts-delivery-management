@@ -1,11 +1,12 @@
 package com.flowersAndGifts.dao;
 
+import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.model.Order;
 
 import java.util.List;
 
 public interface OrderDao {
-    Order selectOrderById(Long id);
+    Order selectOrderById(Long id) throws DaoException;
 
     List<Order> selectAllOrders();
 
@@ -13,9 +14,7 @@ public interface OrderDao {
 
     List<Order> selectAllOrdersByUserId(Long id);
 
-    Order insertOrder(Order order);
+    Order insertOrder(Order order) throws DaoException;
 
-    Order updateOrder(Order order);
-
-    void deleteOrder(Order order);
+    Order updateOrder(Order order) throws DaoException;
 }

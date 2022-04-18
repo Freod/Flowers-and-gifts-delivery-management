@@ -18,7 +18,7 @@ public class UserDaoTests {
 
     @Before
     public void setUp(){
-        //TODO:TRANSACTION
+        //TODO:SET TEST DB
         userDao = new UserDaoImpl();
     }
     
@@ -104,7 +104,6 @@ public class UserDaoTests {
 
     @After
     public void endTests(){
-        //TODO:ROLLBACK
-        System.out.println(":)");
+        //TODO:CLEAR DB
     }
 }

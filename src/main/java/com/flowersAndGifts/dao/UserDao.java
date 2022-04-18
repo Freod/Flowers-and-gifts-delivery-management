@@ -12,7 +12,7 @@ public interface UserDao {
 
     User selectUserByEmailAndPassword(String email, String password) throws DaoException;
 
-    List<User> selectAllUsers() throws DaoException;
+    List<User> selectAllUsers();
 
     User insertUser(User user) throws DaoException;
 
