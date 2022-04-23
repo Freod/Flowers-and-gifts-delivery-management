@@ -28,16 +28,22 @@ public abstract class AbstractDao {
     }
 
     protected void setPreparedStatementParameter(PreparedStatement preparedStatement, int index, Object parameter) throws SQLException {
-        if (Long.class == parameter.getClass()) {
+        if (parameter == null) {
+            preparedStatement.setString(index, "");
+        } else if (Long.class == parameter.getClass()) {
             preparedStatement.setLong(index, (Long) parameter);
         } else if (Integer.class == parameter.getClass()) {
             preparedStatement.setInt(index, (Integer) parameter);
-        } else if (String.class == parameter.getClass()) {
-            preparedStatement.setString(index, (String) parameter);
         } else if (Boolean.class == parameter.getClass()) {
             preparedStatement.setBoolean(index, (Boolean) parameter);
+        } else if (String.class == parameter.getClass()) {
+            preparedStatement.setString(index, (String) parameter);
         } else if (Double.class == parameter.getClass()) {
             preparedStatement.setDouble(index, (Double) parameter);
         }
+    }
+
+    protected String setSortAndDirection(final String query, final String sort, final String direction) {
+        return String.format(query, sort, direction);
     }
 }
