@@ -3,10 +3,7 @@ package com.flowersAndGifts.dao.impl;
 import com.flowersAndGifts.dao.OrderDao;
 import com.flowersAndGifts.dao.ProductDao;
 import com.flowersAndGifts.exception.DaoException;
-import com.flowersAndGifts.model.Address;
-import com.flowersAndGifts.model.Order;
-import com.flowersAndGifts.model.Product;
-import com.flowersAndGifts.model.ProductOrder;
+import com.flowersAndGifts.model.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,6 +20,30 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
     private static final String SELECT_ALL_ORDERS_UNSENT_QUERY = "SELECT o.id, o.user_id, o.country, o.address, o.city, o.postcode, o.send FROM ORDERS o WHERE o.send = ?";
     private static final String SELECT_ALL_ORDERS_BY_USER_ID_QUERY = "SELECT o.id, o.user_id, o.country, o.address, o.city, o.postcode, o.send FROM ORDERS o WHERE o.user_id = ?";
     private static final String SELECT_ALL_PRODUCTS_ORDER_BY_ORDER_ID_QUERY = "SELECT po.product_id, p.name, p.price, p.image, p.active, po.amount FROM PRODUCTS_ORDERS po LEFT JOIN PRODUCTS p ON p.ID=po.PRODUCT_ID WHERE po.order_id = ?;";
+    private static final String SELECT_PAGE_ORDERS_QUERY = "SELECT o.id, o.user_id, o.country, o.address, o.city, o.postcode, o.send FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " ORDER BY o.%s %s LIMIT ? OFFSET ?";
+    private static final String SELECT_PAGE_ORDERS_UNSENT_QUERY = "SELECT o.id, o.user_id, o.country, o.address, o.city, o.postcode, o.send FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND o.send = false" +
+            " ORDER BY o.%s %s LIMIT ? OFFSET ?";
+    private static final String SELECT_PAGE_ORDERS_BY_USER_ID_QUERY = "SELECT o.id, o.user_id, o.country, o.address, o.city, o.postcode, o.send FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND o.user_id = ?" +
+            " ORDER BY o.%s %s LIMIT ? OFFSET ?";
+    // TODO: 23.04.2022
+    //    private static final String SELECT_PAGE_PRODUCTS_BY_ORDER_ID_QUERY = "SELECT po.product_id, p.name, p.price, p.image, p.active, po.amount FROM PRODUCTS_ORDERS po LEFT JOIN PRODUCTS p ON p.ID=po.PRODUCT_ID WHERE po.order_id = ?" +
+    //            " AND UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
+    //            " ORDER BY %s %s LIMIT ? OFFSET ?";
     private static final String INSERT_ORDER_QUERY = "INSERT INTO ORDERS (user_id, country, address, city, postcode, send) VALUES (?, ?, ?, ?, ?, ?) RETURNING id;";
     private static final String INSERT_PRODUCTS_ORDER_QUERY = "INSERT INTO PRODUCTS_ORDERS (order_id, product_id, amount) VALUES (?, ?, ?);";
     private static final String UPDATE_ORDER_QUERY = "UPDATE ORDERS SET user_id=?, country=?, address=?, city=?, postcode=?, send=? WHERE id = ?;";
@@ -30,42 +51,41 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
     @Override
     public Order selectOrderById(Long id) throws DaoException {
         Order order;
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(id))) {
-                try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
-                    List<ProductOrder> productOrderList = new ArrayList<>();
-                    if (selectResultSet.next()) {
-                        order = new Order(
-                                selectResultSet.getLong("ID"),
-                                selectResultSet.getLong("USER_ID"),
-                                null,
-                                new Address(
-                                        selectResultSet.getString("COUNTRY"),
-                                        selectResultSet.getString("ADDRESS"),
-                                        selectResultSet.getString("CITY"),
-                                        selectResultSet.getString("POSTCODE")
-                                ),
-                                selectResultSet.getBoolean("SEND")
-                        );
-                        do {
-                            ProductOrder productOrder = new ProductOrder(
-                                    new Product(
-                                            selectResultSet.getLong("PRODUCT_ID"),
-                                            selectResultSet.getString("NAME"),
-                                            selectResultSet.getDouble("PRICE"),
-                                            selectResultSet.getString("IMAGE"),
-                                            selectResultSet.getBoolean("ACTIVE")
-                                    ),
-                                    selectResultSet.getInt("AMOUNT")
-                            );
-                            productOrderList.add(productOrder);
-                        } while (selectResultSet.next());
-                    } else {
-                        throw new DaoException("Order with this id does not exist.");
-                    }
-                    order.setProductOrder(productOrderList);
-                }
+        try (Connection connection = getConnection();
+             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(id));
+             ResultSet selectResultSet = selectPreparedStatement.executeQuery()
+        ) {
+            List<ProductOrder> productOrderList = new ArrayList<>();
+            if (selectResultSet.next()) {
+                order = new Order(
+                        selectResultSet.getLong("ID"),
+                        selectResultSet.getLong("USER_ID"),
+                        null,
+                        new Address(
+                                selectResultSet.getString("COUNTRY"),
+                                selectResultSet.getString("ADDRESS"),
+                                selectResultSet.getString("CITY"),
+                                selectResultSet.getString("POSTCODE")
+                        ),
+                        selectResultSet.getBoolean("SEND")
+                );
+                do {
+                    ProductOrder productOrder = new ProductOrder(
+                            new Product(
+                                    selectResultSet.getLong("PRODUCT_ID"),
+                                    selectResultSet.getString("NAME"),
+                                    selectResultSet.getDouble("PRICE"),
+                                    selectResultSet.getString("IMAGE"),
+                                    selectResultSet.getBoolean("ACTIVE")
+                            ),
+                            selectResultSet.getInt("AMOUNT")
+                    );
+                    productOrderList.add(productOrder);
+                } while (selectResultSet.next());
+            } else {
+                throw new DaoException("Order with this id does not exist.");
             }
+            order.setProductOrder(productOrderList);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -90,53 +110,122 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
 
     private List<Order> getAllOrders(String selectAllOrdersQuery, List<Object> parameters) {
         List<Order> orders = new ArrayList<>();
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement selectAllOrdersPreparedStatement = getPreparedStatement(connection, selectAllOrdersQuery, parameters)) {
-                try (ResultSet selectAllOrdersResultSet = selectAllOrdersPreparedStatement.executeQuery()) {
 
-                    while (selectAllOrdersResultSet.next()) {
-                        Order order = new Order(
-                                selectAllOrdersResultSet.getLong("ID"),
-                                selectAllOrdersResultSet.getLong("USER_ID"),
-                                null,
-                                new Address(
-                                        selectAllOrdersResultSet.getString("COUNTRY"),
-                                        selectAllOrdersResultSet.getString("ADDRESS"),
-                                        selectAllOrdersResultSet.getString("CITY"),
-                                        selectAllOrdersResultSet.getString("POSTCODE")
-                                ),
-                                selectAllOrdersResultSet.getBoolean("send")
-                        );
-                        orders.add(order);
-                    }
-                    for (Order order : orders) {
-                        List<ProductOrder> productOrderList = new ArrayList<>();
-                        try (PreparedStatement selectProductsOrderPreparedStatement = getPreparedStatement(connection, SELECT_ALL_PRODUCTS_ORDER_BY_ORDER_ID_QUERY, Collections.singletonList(order.getId()))) {
-                            try (ResultSet selectAllProductsOrderResultSet = selectProductsOrderPreparedStatement.executeQuery()) {
-                                while (selectAllProductsOrderResultSet.next()) {
-                                    ProductOrder productOrder = new ProductOrder(
-                                            new Product(
-                                                    selectAllProductsOrderResultSet.getLong("PRODUCT_ID"),
-                                                    selectAllProductsOrderResultSet.getString("NAME"),
-                                                    selectAllProductsOrderResultSet.getDouble("PRICE"),
-                                                    selectAllProductsOrderResultSet.getString("IMAGE"),
-                                                    selectAllProductsOrderResultSet.getBoolean("ACTIVE")
-                                            ),
-                                            selectAllProductsOrderResultSet.getInt("AMOUNT")
-                                    );
-                                    productOrderList.add(productOrder);
-                                }
-                            }
-                        }
-                        order.setProductOrder(productOrderList);
-                    }
-                }
+        try (Connection connection = getConnection();
+             PreparedStatement selectAllOrdersPreparedStatement = getPreparedStatement(connection, selectAllOrdersQuery, parameters);
+             ResultSet selectAllOrdersResultSet = selectAllOrdersPreparedStatement.executeQuery()
+        ) {
+            while (selectAllOrdersResultSet.next()) {
+                Order order = new Order(
+                        selectAllOrdersResultSet.getLong("ID"),
+                        selectAllOrdersResultSet.getLong("USER_ID"),
+                        null,
+                        new Address(
+                                selectAllOrdersResultSet.getString("COUNTRY"),
+                                selectAllOrdersResultSet.getString("ADDRESS"),
+                                selectAllOrdersResultSet.getString("CITY"),
+                                selectAllOrdersResultSet.getString("POSTCODE")
+                        ),
+                        selectAllOrdersResultSet.getBoolean("send")
+                );
+                orders.add(order);
             }
-        } catch (
-                SQLException exception) {
+            orders = getOrderWithProducts(connection, orders);
+        } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
 
+        return orders;
+    }
+
+    @Override
+    public Page<Order> selectPageOrders(Page<Order> page) {
+        return getPageOrders(SELECT_PAGE_ORDERS_QUERY, page, null);
+    }
+
+    @Override
+    public Page<Order> selectPageUnsentOrders(Page<Order> page) {
+        return getPageOrders(SELECT_PAGE_ORDERS_UNSENT_QUERY, page, null);
+    }
+
+    @Override
+    public Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id) {
+        return getPageOrders(SELECT_PAGE_ORDERS_BY_USER_ID_QUERY, page, id);
+    }
+
+    private Page getPageOrders(String selectPageOrdersQuery, Page<Order> page, Long id) {
+        List<Object> parameters;
+        if (id == null) {
+            parameters = Arrays.asList(
+                    page.getFilter().getAddress().getCountry(),
+                    page.getFilter().getAddress().getAddress(),
+                    page.getFilter().getAddress().getCity(),
+                    page.getFilter().getAddress().getPostcode(),
+                    page.getPageSize(),
+                    page.getOffset()
+            );
+        } else {
+            parameters = Arrays.asList(
+                    page.getFilter().getAddress().getCountry(),
+                    page.getFilter().getAddress().getAddress(),
+                    page.getFilter().getAddress().getCity(),
+                    page.getFilter().getAddress().getPostcode(),
+                    id,
+                    page.getPageSize(),
+                    page.getOffset()
+            );
+        }
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters);
+             ResultSet selectResultSet = preparedStatement.executeQuery();
+        ) {
+            List<Order> orders = new ArrayList<>();
+            while (selectResultSet.next()) {
+                Order order = new Order(
+                        selectResultSet.getLong("ID"),
+                        selectResultSet.getLong("USER_ID"),
+                        null,
+                        new Address(
+                                selectResultSet.getString("COUNTRY"),
+                                selectResultSet.getString("ADDRESS"),
+                                selectResultSet.getString("CITY"),
+                                selectResultSet.getString("POSTCODE")
+                        ),
+                        selectResultSet.getBoolean("SEND")
+                );
+                orders.add(order);
+            }
+            orders = getOrderWithProducts(connection, orders);
+            page.setElements(orders);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return page;
+    }
+
+    private List<Order> getOrderWithProducts(Connection connection, List<Order> orders) throws SQLException {
+        for (Order order : orders) {
+            List<ProductOrder> productOrderList = new ArrayList<>();
+            try (PreparedStatement selectProductsOrderPreparedStatement = getPreparedStatement(connection, SELECT_ALL_PRODUCTS_ORDER_BY_ORDER_ID_QUERY, Collections.singletonList(order.getId()));
+                 ResultSet selectAllProductsOrderResultSet = selectProductsOrderPreparedStatement.executeQuery()
+            ) {
+                while (selectAllProductsOrderResultSet.next()) {
+                    ProductOrder productOrder = new ProductOrder(
+                            new Product(
+                                    selectAllProductsOrderResultSet.getLong("PRODUCT_ID"),
+                                    selectAllProductsOrderResultSet.getString("NAME"),
+                                    selectAllProductsOrderResultSet.getDouble("PRICE"),
+                                    selectAllProductsOrderResultSet.getString("IMAGE"),
+                                    selectAllProductsOrderResultSet.getBoolean("ACTIVE")
+                            ),
+                            selectAllProductsOrderResultSet.getInt("AMOUNT")
+                    );
+                    productOrderList.add(productOrder);
+                }
+            }
+            order.setProductOrder(productOrderList);
+        }
         return orders;
     }
 
@@ -156,13 +245,13 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
             for (ProductOrder productOrder : order.getProductOrder()) {
                 productDao.selectProductById(productOrder.getProduct().getId());
             }
-            try (PreparedStatement insertOrderPreparedStatement = getPreparedStatement(connection, INSERT_ORDER_QUERY, insertOrderParameters)) {
-                try (ResultSet resultSetInsertOrder = insertOrderPreparedStatement.executeQuery()) {
-                    if (resultSetInsertOrder.next()) {
-                        order.setId(resultSetInsertOrder.getLong("ID"));
-                    } else {
-                        throw new DaoException("Order does not inserted");
-                    }
+            try (PreparedStatement insertOrderPreparedStatement = getPreparedStatement(connection, INSERT_ORDER_QUERY, insertOrderParameters);
+                 ResultSet resultSetInsertOrder = insertOrderPreparedStatement.executeQuery()
+            ) {
+                if (resultSetInsertOrder.next()) {
+                    order.setId(resultSetInsertOrder.getLong("ID"));
+                } else {
+                    throw new DaoException("Order does not inserted");
                 }
             }
             for (ProductOrder productOrder : order.getProductOrder()) {
@@ -194,17 +283,16 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 order.getId()
         );
 
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(order.getId()))) {
-                try (ResultSet selectResultSet = selectPreparedStatement.executeQuery()) {
-                    if (selectResultSet.next()) {
-                        try (PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_ORDER_QUERY, parameters)) {
-                            updatePreparedStatement.execute();
-                        }
-                    } else {
-                        throw new DaoException("Order with this id does not exits.");
-                    }
+        try (Connection connection = getConnection();
+             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(order.getId()));
+             ResultSet selectResultSet = selectPreparedStatement.executeQuery()
+        ) {
+            if (selectResultSet.next()) {
+                try (PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_ORDER_QUERY, parameters)) {
+                    updatePreparedStatement.execute();
                 }
+            } else {
+                throw new DaoException("Order with this id does not exits.");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

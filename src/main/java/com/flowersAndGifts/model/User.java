@@ -9,7 +9,7 @@ public class User {
     private String firstname;
     private String lastname;
     private Role role;
-    private boolean active = true;
+    private Boolean active = true;
 
     public User() {
     }
@@ -33,7 +33,7 @@ public class User {
         this.active = active;
     }
 
-    public User(Long id, String email, String firstname, String lastname, Role role, boolean active) {
+    public User(Long id, String email, String firstname, String lastname, Role role, Boolean active) {
         this.id = id;
         this.email = email;
         this.firstname = firstname;
@@ -42,7 +42,7 @@ public class User {
         this.active = active;
     }
 
-    public User(String email, String firstname, String lastname, Role role, boolean active) {
+    public User(String email, String firstname, String lastname, Role role, Boolean active) {
         this.email = email;
         this.firstname = firstname;
         this.lastname = lastname;
