@@ -24,6 +24,13 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
             " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND p.active = true" +
             " ORDER BY p.%s %s LIMIT ? OFFSET ?";
+    private static final String COUNT_PAGE_PRODUCTS_QUERY = "SELECT COUNT(p.id) FROM PRODUCTS p" +
+            " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " ORDER BY p.%s %s";
+    private static final String COUNT_PAGE_ACTIVE_PRODUCTS_QUERY = "SELECT COUNT(p.id) FROM PRODUCTS p" +
+            " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND p.active = true" +
+            " ORDER BY p.%s %s";
     private static final String INSERT_PRODUCT_QUERY = "INSERT INTO PRODUCTS (name, price, image, active) VALUES(?, ?, ?, ?) RETURNING id";
     private static final String UPDATE_PRODUCT_QUERY = "UPDATE PRODUCTS SET name = ?, price = ?, image = ?, active = ? WHERE id = ?";
 
@@ -103,15 +110,15 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
 
     @Override
     public Page<Product> selectPageProducts(Page<Product> page) {
-        return getPageProducts(SELECT_PAGE_PRODUCTS_QUERY, page);
+        return getPageProducts(SELECT_PAGE_PRODUCTS_QUERY, COUNT_PAGE_PRODUCTS_QUERY, page);
     }
 
     @Override
     public Page<Product> selectPageActiveProducts(Page<Product> page) {
-        return getPageProducts(SELECT_PAGE_ACTIVE_PRODUCTS_QUERY, page);
+        return getPageProducts(SELECT_PAGE_ACTIVE_PRODUCTS_QUERY, COUNT_PAGE_ACTIVE_PRODUCTS_QUERY, page);
     }
 
-    private Page<Product> getPageProducts(String selectPageProductsQuery, Page<Product> page) {
+    private Page<Product> getPageProducts(String selectPageProductsQuery, String countPageProductsQuery, Page<Product> page) {
         List<Object> parameters = Arrays.asList(
                 page.getFilter().getName(),
                 page.getPageSize(),
@@ -121,6 +128,8 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageProductsQuery, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = preparedStatement.executeQuery();
+             PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(countPageProductsQuery, page.getSortBy(), page.getDirection()), Collections.singletonList(page.getFilter().getName()));
+             ResultSet countResultSet = countPreparedStatement.executeQuery();
         ) {
             List<Product> products = new ArrayList<>();
             while (selectResultSet.next()) {
@@ -132,6 +141,9 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                         selectResultSet.getBoolean("ACTIVE")
                 );
                 products.add(product);
+            }
+            if(countResultSet.next()) {
+                page.setTotalElements(countResultSet.getLong(1));
             }
             page.setElements(products);
         } catch (SQLException e) {

@@ -24,6 +24,12 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
             " AND UPPER(u.lastname) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(u.role) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " ORDER BY u.%s %s LIMIT ? OFFSET ?";
+    private static final String COUNT_PAGE_USERS_QUERY = "SELECT COUNT(u.id) FROM USERS u" +
+            " WHERE UPPER(u.email) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(u.firstname) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(u.lastname) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(u.role) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " ORDER BY u.%s %s";
     private static final String INSERT_USER_QUERY = "INSERT INTO USERS (email, password, firstname, lastname, role, active) VALUES(?, ?, ?, ?, ?, ?) RETURNING id";
     private static final String UPDATE_USER_PASSWORD_BY_EMAIL_QUERY = "UPDATE USERS SET password = ? WHERE email = ?";
     private static final String UPDATE_USER_ACTIVE_BY_EMAIL_QUERY = "UPDATE USERS SET active = ? WHERE email = ?";
@@ -112,9 +118,18 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 page.getOffset()
         );
 
+        List<Object> parameters2 = Arrays.asList(
+                page.getFilter().getEmail(),
+                page.getFilter().getFirstname(),
+                page.getFilter().getLastname(),
+                page.getFilter().getRole()
+                );
+
         try (Connection connection = getConnection();
              PreparedStatement selectPreparedStatement = getPreparedStatement(connection, setSortAndDirection(SELECT_PAGE_USERS_QUERY, page.getSortBy(), page.getDirection()), parameters);
-             ResultSet selectResultSet = selectPreparedStatement.executeQuery()
+             ResultSet selectResultSet = selectPreparedStatement.executeQuery();
+             PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(COUNT_PAGE_USERS_QUERY, page.getSortBy(), page.getDirection()), parameters2);
+             ResultSet countResultSet = countPreparedStatement.executeQuery()
         ) {
             List<User> users = new ArrayList<>();
             while (selectResultSet.next()) {
@@ -127,6 +142,9 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                         selectResultSet.getBoolean("ACTIVE")
                 );
                 users.add(user);
+            }
+            if(countResultSet.next()){
+                page.setTotalElements(countResultSet.getLong(1));
             }
             page.setElements(users);
         } catch (SQLException e) {

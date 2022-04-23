@@ -40,6 +40,27 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
             " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND o.user_id = ?" +
             " ORDER BY o.%s %s LIMIT ? OFFSET ?";
+    private static final String COUNT_PAGE_ORDERS_QUERY = "SELECT count(o.id) FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND o.send = false" +
+            " ORDER BY o.%s %s";
+    private static final String COUNT_PAGE_ORDERS_UNSENT_QUERY = "SELECT count(o.id) FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " ORDER BY o.%s %s";
+    private static final String COUNT_PAGE_ORDERS_BY_USER_ID_QUERY = "SELECT count(o.id) FROM ORDERS o " +
+            " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
+            " AND o.user_id = ?" +
+            " ORDER BY o.%s %s";
+
     // TODO: 23.04.2022
     //    private static final String SELECT_PAGE_PRODUCTS_BY_ORDER_ID_QUERY = "SELECT po.product_id, p.name, p.price, p.image, p.active, po.amount FROM PRODUCTS_ORDERS po LEFT JOIN PRODUCTS p ON p.ID=po.PRODUCT_ID WHERE po.order_id = ?" +
     //            " AND UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
@@ -140,21 +161,23 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
 
     @Override
     public Page<Order> selectPageOrders(Page<Order> page) {
-        return getPageOrders(SELECT_PAGE_ORDERS_QUERY, page, null);
+        return getPageOrders(SELECT_PAGE_ORDERS_QUERY, COUNT_PAGE_ORDERS_QUERY, page, null);
     }
 
     @Override
     public Page<Order> selectPageUnsentOrders(Page<Order> page) {
-        return getPageOrders(SELECT_PAGE_ORDERS_UNSENT_QUERY, page, null);
+        return getPageOrders(SELECT_PAGE_ORDERS_UNSENT_QUERY, COUNT_PAGE_ORDERS_UNSENT_QUERY, page, null);
     }
 
     @Override
     public Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id) {
-        return getPageOrders(SELECT_PAGE_ORDERS_BY_USER_ID_QUERY, page, id);
+        return getPageOrders(SELECT_PAGE_ORDERS_BY_USER_ID_QUERY, COUNT_PAGE_ORDERS_BY_USER_ID_QUERY, page, id);
     }
 
-    private Page getPageOrders(String selectPageOrdersQuery, Page<Order> page, Long id) {
+    private Page getPageOrders(String selectPageOrdersQuery, String countPageOrdersQuery, Page<Order> page, Long id) {
         List<Object> parameters;
+        List<Object> parameters2;
+
         if (id == null) {
             parameters = Arrays.asList(
                     page.getFilter().getAddress().getCountry(),
@@ -163,6 +186,12 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                     page.getFilter().getAddress().getPostcode(),
                     page.getPageSize(),
                     page.getOffset()
+            );
+            parameters2 = Arrays.asList(
+                    page.getFilter().getAddress().getCountry(),
+                    page.getFilter().getAddress().getAddress(),
+                    page.getFilter().getAddress().getCity(),
+                    page.getFilter().getAddress().getPostcode()
             );
         } else {
             parameters = Arrays.asList(
@@ -174,11 +203,20 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                     page.getPageSize(),
                     page.getOffset()
             );
+            parameters2 = Arrays.asList(
+                    page.getFilter().getAddress().getCountry(),
+                    page.getFilter().getAddress().getAddress(),
+                    page.getFilter().getAddress().getCity(),
+                    page.getFilter().getAddress().getPostcode(),
+                    id
+            );
         }
 
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = preparedStatement.executeQuery();
+             PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(countPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters2);
+             ResultSet countResultSet = countPreparedStatement.executeQuery();
         ) {
             List<Order> orders = new ArrayList<>();
             while (selectResultSet.next()) {
@@ -197,6 +235,9 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 orders.add(order);
             }
             orders = getOrderWithProducts(connection, orders);
+            if(countResultSet.next()){
+                page.setTotalElements(countResultSet.getLong(1));
+            }
             page.setElements(orders);
         } catch (SQLException e) {
             throw new RuntimeException(e);

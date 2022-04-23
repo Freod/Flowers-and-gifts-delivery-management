@@ -11,6 +11,7 @@ public class Page<T> {
     private String direction;
     private List<T> elements = new ArrayList<>();
     private T filter;
+    private long totalElements;
 
     public Page(int pageNumber, int pageSize, T filter) {
         this.pageNumber = pageNumber;
@@ -28,13 +29,14 @@ public class Page<T> {
         this.filter = filter;
     }
 
-    public Page(int pageNumber, int pageSize, String sortBy, String direction, List<T> elements, T filter) {
+    public Page(int pageNumber, int pageSize, String sortBy, String direction, List<T> elements, T filter, long totalElements) {
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.sortBy = sortBy;
         this.direction = direction;
         this.elements = elements;
         this.filter = filter;
+        this.totalElements = totalElements;
     }
 
     public int getPageNumber() {
@@ -85,17 +87,25 @@ public class Page<T> {
         this.filter = filter;
     }
 
+    public long getTotalElements() {
+        return totalElements;
+    }
+
+    public void setTotalElements(long totalElements) {
+        this.totalElements = totalElements;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Page<?> page = (Page<?>) o;
-        return pageNumber == page.pageNumber && pageSize == page.pageSize && Objects.equals(sortBy, page.sortBy) && Objects.equals(direction, page.direction) && Objects.equals(elements, page.elements) && Objects.equals(filter, page.filter);
+        return pageNumber == page.pageNumber && pageSize == page.pageSize && totalElements == page.totalElements && Objects.equals(sortBy, page.sortBy) && Objects.equals(direction, page.direction) && Objects.equals(elements, page.elements) && Objects.equals(filter, page.filter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pageNumber, pageSize, sortBy, direction, elements, filter);
+        return Objects.hash(pageNumber, pageSize, sortBy, direction, elements, filter, totalElements);
     }
 
     @Override
@@ -107,10 +117,15 @@ public class Page<T> {
                 ", direction='" + direction + '\'' +
                 ", elements=" + elements +
                 ", filter=" + filter +
+                ", totalElements=" + totalElements +
                 '}';
     }
 
     public int getOffset() {
         return (pageNumber - 1) * pageSize;
+    }
+
+    public long allPages(){
+        return totalElements/pageSize;
     }
 }
