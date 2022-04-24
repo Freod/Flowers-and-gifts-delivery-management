@@ -28,8 +28,7 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
             " WHERE UPPER(u.email) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(u.firstname) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(u.lastname) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " AND UPPER(u.role) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " ORDER BY u.%s %s";
+            " AND UPPER(u.role) LIKE CONCAT('%%', UPPER(?), '%%')";
     private static final String INSERT_USER_QUERY = "INSERT INTO USERS (email, password, firstname, lastname, role, active) VALUES(?, ?, ?, ?, ?, ?) RETURNING id";
     private static final String UPDATE_USER_PASSWORD_BY_EMAIL_QUERY = "UPDATE USERS SET password = ? WHERE email = ?";
     private static final String UPDATE_USER_ACTIVE_BY_EMAIL_QUERY = "UPDATE USERS SET active = ? WHERE email = ?";

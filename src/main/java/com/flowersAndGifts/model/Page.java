@@ -126,6 +126,8 @@ public class Page<T> {
     }
 
     public long allPages(){
-        return totalElements/pageSize;
+        long p = totalElements/pageSize;
+        if(totalElements%pageSize!=0) p++;
+        return p;
     }
 }
