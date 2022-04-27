@@ -24,8 +24,8 @@ public class Page<T> {
     public Page(int pageNumber, int pageSize, String sortBy, String direction, T filter) {
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
-        this.sortBy = sortBy;
-        this.direction = direction;
+        this.sortBy = sortBy==null?"id":sortBy;
+        this.direction = direction==null?"ASC":direction;
         this.filter = filter;
     }
 

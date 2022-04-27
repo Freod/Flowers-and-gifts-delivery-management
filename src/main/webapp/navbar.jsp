@@ -2,19 +2,19 @@
     <div>
         <ul>
             <c:if test="${user.role != 'ADMIN'}">
-                <li>Offer</li>
+                <li><a href="offer">Offer</a></li>
             </c:if>
             <c:if test="${not empty user.role && user.role=='EMPLOYEE'}">
-                <li>Products</li>
+                <li><a href="products">Products</a></li>
             </c:if>
             <c:if test="${not empty user.role && user.role=='EMPLOYEE'}">
-                <li>Orders</li>
+                <li><a href="orders">Orders</a></li>
             </c:if>
-            <c:if test="${user.role != 'ADMIN'}">
-                <li>Cart</li>
+            <c:if test="${user.role != 'ADMIN' && user.role!='EMPLOYEE'}">
+                <li><a href="cart">Cart</a></li>
             </c:if>
             <c:if test="${not empty user.role && user.role=='EMPLOYEE'}">
-                <li>Product</li>
+                <li><a href="addProduct">Add product</a></li>
             </c:if>
             <c:if test="${not empty user.role && user.role=='ADMIN'}">
                 <li><a href="users">Users</a></li>

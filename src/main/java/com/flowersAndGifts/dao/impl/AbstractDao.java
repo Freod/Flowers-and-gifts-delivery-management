@@ -1,7 +1,7 @@
 package com.flowersAndGifts.dao.impl;
 
 import com.flowersAndGifts.database.DatabaseConnection;
-import com.flowersAndGifts.exception.DaoException;
+import com.flowersAndGifts.model.Role;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +31,11 @@ public abstract class AbstractDao {
         if (parameter == null) {
             preparedStatement.setString(index, "");
         } else if (Long.class == parameter.getClass()) {
-            preparedStatement.setLong(index, (Long) parameter);
+            if((Long) parameter == 0L){
+                preparedStatement.setObject(index, null);
+            }else {
+                preparedStatement.setLong(index, (Long) parameter);
+            }
         } else if (Integer.class == parameter.getClass()) {
             preparedStatement.setInt(index, (Integer) parameter);
         } else if (Boolean.class == parameter.getClass()) {
@@ -40,6 +44,8 @@ public abstract class AbstractDao {
             preparedStatement.setString(index, (String) parameter);
         } else if (Double.class == parameter.getClass()) {
             preparedStatement.setDouble(index, (Double) parameter);
+        }else if (Role.class == parameter.getClass()){
+            preparedStatement.setString(index, parameter.toString());
         }
     }
 

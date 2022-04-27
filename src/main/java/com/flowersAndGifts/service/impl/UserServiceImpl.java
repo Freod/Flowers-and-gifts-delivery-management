@@ -57,6 +57,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User changeRole(User user) throws ServiceException {
+        try {
+            return userDao.updateUserRole(user);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
     public Page<User> allUsersByPage(Page<User> page) throws ServiceException {
         return userDao.selectPageUsers(page);
     }

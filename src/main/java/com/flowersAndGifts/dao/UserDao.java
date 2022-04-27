@@ -23,6 +23,8 @@ public interface UserDao {
 
     User updateUserActive(User user) throws DaoException;
 
+    User updateUserRole(User user) throws DaoException;
+
     void deleteUserById(Long id) throws DaoException;
 
     void deleteUserByEmail(String email) throws DaoException;

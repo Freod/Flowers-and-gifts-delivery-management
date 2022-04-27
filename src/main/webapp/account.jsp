@@ -17,23 +17,58 @@
 </div>
 <c:if test="${user.role == 'CUSTOMER'}">
     <div>
+        <form method="get" action="account">
+            Country
+            <input type="text" name="country">
+            Address
+            <input type="text" name="address">
+            City
+            <input type="text" name="city">
+            Postcode
+            <input type="text" name="postcode">
+            Order by:
+            <select name="sortBy">
+                <option value="id">ID</option>
+                <option value="country">COUNTRY</option>
+                <option value="address">ADDRESS</option>
+                <option value="city">CITY</option>
+                <option value="postcode">POSTCODE</option>
+                <option value="send">STATUS</option>
+            </select>
+            <select name="direction">
+                <option value="ASC">ASC</option>
+                <option value="DESC">DESC</option>
+            </select>
+            <input type="submit" value="Filter">
+        </form>
         <table>
             <tr>
-                <th>Country:</th>
+                <th>Country</th>
                 <th>Address</th>
                 <th>City</th>
                 <th>Postcode</th>
+                <th>Products</th>
                 <th>Status</th>
             </tr>
-<%--            <c:forEach>--%>
-<%--                <tr>--%>
-<%--                    <td>${order.address.country}</td>--%>
-<%--                    <td>${order.address.address}</td>--%>
-<%--                    <td>${order.address.city}</td>--%>
-<%--                    <td>${order.address.postcode}</td>--%>
-<%--                    <td>${order.isSent}</td>--%>
-<%--                </tr>--%>
-<%--            </c:forEach>--%>
+            <c:forEach var="order" items="${orders}">
+                <tr>
+                    <td>${order.address.country}</td>
+                    <td>${order.address.address}</td>
+                    <td>${order.address.city}</td>
+                    <td>${order.address.postcode}</td>
+                    <td>
+                        <c:forEach var="productorder" items="${order.productOrder}">
+                            <span>${productorder.product.name} - ${productorder.amount}</span><br>
+                        </c:forEach>
+                    </td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${order.status}">Sent</c:when>
+                            <c:otherwise>Unsent</c:otherwise>
+                        </c:choose>
+                    </td>
+                </tr>
+            </c:forEach>
         </table>
         <c:forEach var="i" begin="1" end="${allPages}">
             <c:choose>

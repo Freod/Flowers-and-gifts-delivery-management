@@ -18,7 +18,7 @@ public class MainController extends HttpServlet {
     private Map<String, Command> commandMap;
 
     @Override
-    public void init() throws ServletException {
+    public void init(){
         if (commandMap == null) {
             commandMap = new HashMap<>();
         }
@@ -30,6 +30,12 @@ public class MainController extends HttpServlet {
         commandMap.put("users", new UsersCommand());
         commandMap.put("changeActive", new ChangeActiveCommand());
         commandMap.put("changeRole", new ChangeRoleCommand());
+        commandMap.put("offer", new OfferCommand());
+        commandMap.put("cart", new CartCommand());
+        commandMap.put("order", new OrderCommand());
+        commandMap.put("orders", new OrdersCommand());
+        commandMap.put("addProduct", new AddProductCommand());
+        commandMap.put("products", new ProductsCommand());
     }
 
     @Override

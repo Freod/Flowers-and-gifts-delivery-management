@@ -32,6 +32,7 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
     private static final String INSERT_USER_QUERY = "INSERT INTO USERS (email, password, firstname, lastname, role, active) VALUES(?, ?, ?, ?, ?, ?) RETURNING id";
     private static final String UPDATE_USER_PASSWORD_BY_EMAIL_QUERY = "UPDATE USERS SET password = ? WHERE email = ?";
     private static final String UPDATE_USER_ACTIVE_BY_EMAIL_QUERY = "UPDATE USERS SET active = ? WHERE email = ?";
+    private static final String UPDATE_USER_ROLE_BY_EMAIL_QUERY = "UPDATE USERS SET role = ? WHERE email = ?";
     private static final String DELETE_USER_BY_ID_QUERY = "DELETE FROM USERS WHERE id = ?";
     private static final String DELETE_USER_BY_EMAIL_QUERY = "DELETE FROM USERS WHERE email = ?";
 
@@ -192,6 +193,11 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
     @Override
     public User updateUserActive(User user) throws DaoException {
         return updateUser(UPDATE_USER_ACTIVE_BY_EMAIL_QUERY, Arrays.asList(user.getActive(), user.getEmail()));
+    }
+
+    @Override
+    public User updateUserRole(User user) throws DaoException {
+        return updateUser(UPDATE_USER_ROLE_BY_EMAIL_QUERY, Arrays.asList(user.getRole().toString(), user.getEmail()));
     }
 
     private User updateUser(String updateUserQuery, List<Object> parameters) throws DaoException {

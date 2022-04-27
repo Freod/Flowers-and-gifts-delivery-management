@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ChangeRoleCommand implements Command {
-    private UserService userService = new UserServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
@@ -68,7 +68,16 @@ public class ChangeRoleCommand implements Command {
         }
         user.setRole(role);
 
-        //TODO
-//        userService
+        try {
+            userService.changeRole(user);
+        } catch (ServiceException e) {
+            throw new ControllerException(e);
+        }
+
+        try {
+            resp.sendRedirect("users");
+        } catch (IOException e) {
+            throw new ControllerException(e);
+        }
     }
 }

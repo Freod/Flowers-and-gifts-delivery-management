@@ -4,7 +4,6 @@ import com.flowersAndGifts.dao.impl.OrderDaoImpl;
 import com.flowersAndGifts.dao.impl.ProductDaoImpl;
 import com.flowersAndGifts.dao.impl.UserDaoImpl;
 import com.flowersAndGifts.model.*;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,10 +18,10 @@ public class OrderDaoTests {
     private ProductDao productDao;
     private OrderDao orderDao;
 
-    private User user = new User("test", "test", "test", "test", Role.CUSTOMER, true);
-    private Product product1 = new Product("TestProd1", 20.0, "testProd1.png", true);
-    private Product product2 = new Product("TestProd2", 40.0, "testProd2.png", true);
-    private Order order = new Order();
+    private final User user = new User("test", "test", "test", "test", Role.CUSTOMER, true);
+    private final Product product1 = new Product("TestProd1", 20.0, "testProd1.png", true);
+    private final Product product2 = new Product("TestProd2", 40.0, "testProd2.png", true);
+    private final Order order = new Order();
 
     @Before
     public void setUp() {
@@ -41,7 +40,7 @@ public class OrderDaoTests {
 
         order.setAddress(new Address("x", "y", "z", "9"));
         order.setUser_id(userDb.getId());
-        order.setSent(false);
+        order.setStatus(false);
         List<ProductOrder> productOrderList = new ArrayList<>();
         productOrderList.add(new ProductOrder(productDb1, 1));
         productOrderList.add(new ProductOrder(productDb2, 2));

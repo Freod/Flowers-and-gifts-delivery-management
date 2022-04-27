@@ -4,14 +4,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class DatabaseConnection {
     private Properties properties = new Properties();
-    private static String DATABASE_CONFIG_PATH = "database/db.properties";
+    private static final String DATABASE_CONFIG_PATH = "database/db.properties";
     private static final String
             DRIVER = "database.driver",
             URL = "database.url",

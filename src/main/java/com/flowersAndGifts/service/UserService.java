@@ -15,5 +15,7 @@ public interface UserService {
 
     User changeActive(User user) throws ServiceException;
 
+    User changeRole(User user) throws ServiceException;
+
     Page<User> allUsersByPage(Page<User> page) throws ServiceException;
 }

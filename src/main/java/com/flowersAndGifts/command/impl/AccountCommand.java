@@ -1,17 +1,11 @@
 package com.flowersAndGifts.command.impl;
 
 import com.flowersAndGifts.command.Command;
-import com.flowersAndGifts.controller.MainController;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
-import com.flowersAndGifts.model.Order;
-import com.flowersAndGifts.model.Page;
-import com.flowersAndGifts.model.Role;
-import com.flowersAndGifts.model.User;
+import com.flowersAndGifts.model.*;
 import com.flowersAndGifts.service.OrderService;
-import com.flowersAndGifts.service.UserService;
 import com.flowersAndGifts.service.impl.OrderServiceImpl;
-import com.flowersAndGifts.service.impl.UserServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -22,30 +16,38 @@ import java.util.logging.Logger;
 
 public class AccountCommand implements Command {
     private static final Logger LOGGER = Logger.getLogger(AccountCommand.class.getName());
-    private UserService userService = new UserServiceImpl();
-    private OrderService orderService = new OrderServiceImpl();
+    private final OrderService orderService = new OrderServiceImpl();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        LOGGER.info("");
-
         HttpSession session = req.getSession(false);
-        if(session == null){
+        if (session == null) {
             throw new ControllerException("You must be logged in.");
         }
 
         User user = (User) session.getAttribute("user");
-        if(user == null){
+        if (user == null) {
             throw new ControllerException("You must be logged in.");
         }
 
-        if(user.getRole().equals(Role.CUSTOMER)){
-            //        Page<Order> orderPage = new Page<>(1, 8, new Order());
+        if (user.getRole().equals(Role.CUSTOMER)) {
+            Order orderFilter = new Order(new Address(req.getParameter("country"), req.getParameter("address"), req.getParameter("city"), req.getParameter("postcode")));
+
+            String pageString = req.getParameter("page");
+            int page = pageString == null ? 1 : Integer.parseInt(pageString);
+            Page<Order> orderPage = new Page<>(page, 8, req.getParameter("sortBy"), req.getParameter("direction"), orderFilter);
+            try {
+                orderPage = orderService.allOrdersByPageAndUserId(orderPage, user);
+            } catch (ServiceException e) {
+                throw new ControllerException(e);
+            }
+            session.setAttribute("page", orderPage.getPageNumber());
+            session.setAttribute("allPages", orderPage.allPages());
+            session.setAttribute("orders", orderPage.getElements());
         }
 
-
         try {
-            req.getRequestDispatcher(req.getServletPath().substring(1)+".jsp").forward(req, resp);
+            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
         } catch (ServletException | IOException e) {
             throw new ControllerException(e);
         }

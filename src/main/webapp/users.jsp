@@ -10,6 +10,32 @@
 <body>
 <div>
     <%@include file="navbar.jsp" %>
+    <form method="get" action="users">
+        Email:<input type="text" name="email">
+        Firstname:<input type="text" name="firstname">
+        Lastname:<input type="text" name="lastname">
+        Role:
+        <select name="role">
+            <option value="all">ALL</option>
+            <option value="customer">CUSTOMER</option>
+            <option value="employee">EMPLOYEE</option>
+            <option value="admin">ADMIN</option>
+        </select>
+        Order by:
+        <select name="sortBy">
+            <option value="id">ID</option>
+            <option value="email">EMAIL</option>
+            <option value="firstname">FIRSTNAME</option>
+            <option value="lastname">LASTNAME</option>
+            <option value="role">ROLE</option>
+            <option value="active">ACTIVE</option>
+        </select>
+        <select name="direction">
+            <option value="ASC">ASC</option>
+            <option value="DESC">DESC</option>
+        </select>
+        <input type="submit" value="Filter">
+    </form>
     <table>
         <tr>
             <th>Email</th>
@@ -48,7 +74,8 @@
     <c:forEach var="i" begin="1" end="${allPages}">
         <c:choose>
             <c:when test="${i==page}">${i}</c:when>
-            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a href="users?page=${i}">${i}</a></c:when>
+            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a
+                    href="users?page=${i}">${i}</a></c:when>
         </c:choose>
     </c:forEach>
 </div>

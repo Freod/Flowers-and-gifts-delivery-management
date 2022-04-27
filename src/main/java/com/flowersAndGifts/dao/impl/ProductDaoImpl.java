@@ -25,14 +25,12 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
             " AND p.active = true" +
             " ORDER BY p.%s %s LIMIT ? OFFSET ?";
     private static final String COUNT_PAGE_PRODUCTS_QUERY = "SELECT COUNT(p.id) FROM PRODUCTS p" +
-            " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " ORDER BY p.%s %s";
+            " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')";
     private static final String COUNT_PAGE_ACTIVE_PRODUCTS_QUERY = "SELECT COUNT(p.id) FROM PRODUCTS p" +
             " WHERE UPPER(p.name) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " AND p.active = true" +
-            " ORDER BY p.%s %s";
+            " AND p.active = true";
     private static final String INSERT_PRODUCT_QUERY = "INSERT INTO PRODUCTS (name, price, image, active) VALUES(?, ?, ?, ?) RETURNING id";
-    private static final String UPDATE_PRODUCT_QUERY = "UPDATE PRODUCTS SET name = ?, price = ?, image = ?, active = ? WHERE id = ?";
+    private static final String UPDATE_PRODUCT_QUERY = "UPDATE PRODUCTS SET price = ?, image = ?, active = ? WHERE id = ?";
 
     @Override
     public Product selectProductById(Long id) throws DaoException {
@@ -129,7 +127,7 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
              PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageProductsQuery, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = preparedStatement.executeQuery();
              PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(countPageProductsQuery, page.getSortBy(), page.getDirection()), Collections.singletonList(page.getFilter().getName()));
-             ResultSet countResultSet = countPreparedStatement.executeQuery();
+             ResultSet countResultSet = countPreparedStatement.executeQuery()
         ) {
             List<Product> products = new ArrayList<>();
             while (selectResultSet.next()) {
@@ -186,7 +184,6 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
     @Override
     public Product updateProduct(Product product) throws DaoException {
         List<Object> parameters = Arrays.asList(
-                product.getName(),
                 product.getPrice(),
                 product.getImage(),
                 product.isActive(),
@@ -195,17 +192,17 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
 
         try (Connection connection = getConnection();
              PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_ID_QUERY, Collections.singletonList(product.getId()));
-             PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()));
+//             PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()));
              ResultSet selectResultSet = selectPreparedStatement.executeQuery();
-             ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery();
+//             ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery();
              PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_PRODUCT_QUERY, parameters)
         ) {
             if (selectResultSet.next()) {
-                if (!selectNameResultSet.next()) {
+//                if (!selectNameResultSet.next()) {
                     updatePreparedStatement.execute();
-                } else {
-                    throw new DaoException("Product with this name does already exist.");
-                }
+//                } else {
+//                    throw new DaoException("Product with this name does already exist.");
+//                }
             } else {
                 throw new DaoException("Product with this id does not exist.");
             }

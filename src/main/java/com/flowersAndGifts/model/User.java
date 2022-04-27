@@ -50,6 +50,13 @@ public class User {
         this.active = active;
     }
 
+    public User(String email, String firstname, String lastname, Role role) {
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
     public Long getId() {
         return id;
     }

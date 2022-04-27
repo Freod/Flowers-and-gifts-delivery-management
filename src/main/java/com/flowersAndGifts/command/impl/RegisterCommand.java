@@ -1,7 +1,6 @@
 package com.flowersAndGifts.command.impl;
 
 import com.flowersAndGifts.command.Command;
-import com.flowersAndGifts.controller.MainController;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Role;
@@ -18,7 +17,7 @@ import java.util.logging.Logger;
 
 public class RegisterCommand implements Command {
     private static final Logger LOGGER = Logger.getLogger(RegisterCommand.class.getName());
-    private UserService userService = new UserServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {

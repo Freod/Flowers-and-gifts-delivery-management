@@ -16,7 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 public class UsersCommand implements Command {
-    private UserService userService = new UserServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
@@ -30,15 +30,20 @@ public class UsersCommand implements Command {
             throw new ControllerException("Only admin can be here.");
         }
 
-        int page;
+
+        String roleString = req.getParameter("role");
+        Role role = roleString==null || roleString.equals("all")?null:Role.valueOf(roleString.toUpperCase());
+        User userFilter = new User(
+                req.getParameter("email"),
+                req.getParameter("firstname"),
+                req.getParameter("lastname"),
+                role
+        );
+
         String pageString = req.getParameter("page");
-        if(pageString==null){
-            page = 1;
-        }
-        else {
-            page = Integer.parseInt(pageString);
-        }
-        Page<User> userPage = new Page<>(page, 10, new User());
+        int page = pageString == null ? 1 : Integer.parseInt(pageString);
+
+        Page<User> userPage = new Page<>(page, 10, req.getParameter("sortBy"), req.getParameter("direction"), userFilter);
         try {
             userPage = userService.allUsersByPage(userPage);
         } catch (ServiceException e) {
@@ -50,7 +55,7 @@ public class UsersCommand implements Command {
         session.setAttribute("users", userPage.getElements());
 
         try {
-            req.getRequestDispatcher(req.getServletPath().substring(1)+".jsp").forward(req, resp);
+            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
         } catch (ServletException | IOException e) {
             throw new ControllerException(e);
         }
@@ -58,6 +63,6 @@ public class UsersCommand implements Command {
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        getProcess(req, resp);
+//        getProcess(req, resp);
     }
 }
