@@ -4,15 +4,18 @@ import java.util.Objects;
 
 public class Address {
     private String country;
+    private String address;
     private String city;
-    private String homeNumber;
-    private String postCode;
+    private String postcode;
 
-    public Address(String country, String city, String homeNumber, String postCode) {
+    public Address() {
+    }
+
+    public Address(String country, String address, String city, String postcode) {
         this.country = country;
+        this.address = address;
         this.city = city;
-        this.homeNumber = homeNumber;
-        this.postCode = postCode;
+        this.postcode = postcode;
     }
 
     public String getCountry() {
@@ -23,6 +26,14 @@ public class Address {
         this.country = country;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public String getCity() {
         return city;
     }
@@ -31,42 +42,34 @@ public class Address {
         this.city = city;
     }
 
-    public String getHomeNumber() {
-        return homeNumber;
+    public String getPostcode() {
+        return postcode;
     }
 
-    public void setHomeNumber(String homeNumber) {
-        this.homeNumber = homeNumber;
-    }
-
-    public String getPostCode() {
-        return postCode;
-    }
-
-    public void setPostCode(String postCode) {
-        this.postCode = postCode;
+    public void setPostcode(String postcode) {
+        this.postcode = postcode;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Address address = (Address) o;
-        return Objects.equals(country, address.country) && Objects.equals(city, address.city) && Objects.equals(homeNumber, address.homeNumber) && Objects.equals(postCode, address.postCode);
+        Address address1 = (Address) o;
+        return Objects.equals(country, address1.country) && Objects.equals(address, address1.address) && Objects.equals(city, address1.city) && Objects.equals(postcode, address1.postcode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(country, city, homeNumber, postCode);
+        return Objects.hash(country, address, city, postcode);
     }
 
     @Override
     public String toString() {
         return "Address{" +
                 "country='" + country + '\'' +
+                ", address='" + address + '\'' +
                 ", city='" + city + '\'' +
-                ", homeNumber='" + homeNumber + '\'' +
-                ", postCode='" + postCode + '\'' +
+                ", postcode='" + postcode + '\'' +
                 '}';
     }
 }

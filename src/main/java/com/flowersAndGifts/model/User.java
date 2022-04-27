@@ -4,15 +4,57 @@ import java.util.Objects;
 
 public class User {
     private Long id;
-    private String firstName;
-    private String lastName;
-    private Address address;
-    private String phoneNumber;
-    private String login;
+    private String email;
     private String password;
+    private String firstname;
+    private String lastname;
     private Role role;
+    private Boolean active = true;
 
     public User() {
+    }
+
+    public User(Long id, String email, String password, String firstname, String lastname, Role role, Boolean active) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(String email, String password, String firstname, String lastname, Role role, Boolean active) {
+        this.email = email;
+        this.password = password;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(Long id, String email, String firstname, String lastname, Role role, Boolean active) {
+        this.id = id;
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(String email, String firstname, String lastname, Role role, Boolean active) {
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+        this.active = active;
+    }
+
+    public User(String email, String firstname, String lastname, Role role) {
+        this.email = email;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
     }
 
     public Long getId() {
@@ -23,44 +65,12 @@ public class User {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -71,12 +81,36 @@ public class User {
         this.password = password;
     }
 
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
     public Role getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRole(String role) {
+        this.role = Role.valueOf(role);
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     @Override
@@ -84,25 +118,24 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(address, user.address) && Objects.equals(phoneNumber, user.phoneNumber) && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(role, user.role);
+        return Objects.equals(id, user.id) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && role == user.role && Objects.equals(active, user.active);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, address, phoneNumber, login, password, role);
+        return Objects.hash(id, email, password, firstname, lastname, role, active);
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", address=" + address +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", login='" + login + '\'' +
+                ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
                 ", role=" + role +
+                ", active=" + active +
                 '}';
     }
 }
