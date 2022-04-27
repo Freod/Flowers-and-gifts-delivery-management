@@ -1,7 +1,7 @@
 package com.flowersAndGifts.controller;
 
-import com.flowersAndGifts.command.Command;
 import com.flowersAndGifts.command.impl.*;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 
 import javax.servlet.ServletException;
@@ -40,9 +40,9 @@ public class MainController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        LOGGER.info("");
+        LOGGER.info(req.getServletPath());
         try {
-            getProcess(req, resp);
+            commandMap.get(req.getServletPath().substring(1)).getProcess(req, resp);
         } catch (ControllerException e) {
             throw new RuntimeException(e);
         }
@@ -50,21 +50,11 @@ public class MainController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        LOGGER.info("");
+        LOGGER.info(req.getServletPath());
         try {
-            postProcess(req, resp);
+            commandMap.get(req.getServletPath().substring(1)).postProcess(req, resp);
         } catch (ControllerException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        LOGGER.info(req.getServletPath());
-        commandMap.get(req.getServletPath().substring(1)).getProcess(req, resp);
-    }
-
-    private void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        LOGGER.info(req.getServletPath());
-        commandMap.get(req.getServletPath().substring(1)).postProcess(req, resp);
     }
 }

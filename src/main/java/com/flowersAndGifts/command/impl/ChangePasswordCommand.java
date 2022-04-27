@@ -1,9 +1,8 @@
 package com.flowersAndGifts.command.impl;
 
-import com.flowersAndGifts.command.Command;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
-import com.flowersAndGifts.model.Role;
 import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.UserService;
 import com.flowersAndGifts.service.impl.UserServiceImpl;
@@ -13,55 +12,43 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.logging.Logger;
+
+import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
+import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class ChangePasswordCommand implements Command {
-    private static final Logger LOGGER = Logger.getLogger(ChangePasswordCommand.class.getName());
-    private UserService userService = new UserServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        LOGGER.info("");
-
         HttpSession session = req.getSession(false);
-        if (session == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
+
+        User user = (User) session.getAttribute("user");
+        needToBeLoggedIn(user);
 
         String email = req.getParameter("email");
-        if (email != null) {
-            User user = (User) session.getAttribute("user");
-            if (Role.ADMIN.compareTo(user.getRole()) != 0) {
-                throw new ControllerException("Only admin can be here.");
-            }
+        if (email != null && !email.isEmpty()) {
+            needToBeAdmin(user);
             session.setAttribute("email", email);
         }
 
-        try {
-            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
-        } catch (ServletException | IOException e) {
-            throw new ControllerException(e);
-        }
+        sendRequestDispatcher(req, resp);
     }
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        LOGGER.info("");
-
         HttpSession session = req.getSession(false);
-        if (session == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
 
         String email = req.getParameter("email");
-        String password = req.getParameter("password");
+        String password = isValidString(req.getParameter("password"), "password");
         User user = new User();
-        if (email != null && email != "") {
+        if (email != null && !email.isEmpty()) {
             User admin = (User) session.getAttribute("user");
-            if (Role.ADMIN.compareTo(admin.getRole()) != 0) {
-                throw new ControllerException("Only admin can be here.");
-            }
-            user.setEmail(email);
+            needToBeAdmin(admin);
+            user.setEmail(isValidString(email, "email"));
             try {
                 user = userService.userAccount(user);
             } catch (ServiceException e) {
@@ -81,7 +68,7 @@ public class ChangePasswordCommand implements Command {
             throw new ControllerException(e);
         }
 
-        if (email != null && email != "") {
+        if (email != null && !email.isEmpty()) {
             try {
                 req.getRequestDispatcher("users").forward(req, resp);
             } catch (IOException | ServletException e) {
@@ -94,7 +81,5 @@ public class ChangePasswordCommand implements Command {
                 throw new ControllerException(e);
             }
         }
-
-
     }
 }

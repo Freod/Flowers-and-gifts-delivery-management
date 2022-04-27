@@ -1,17 +1,23 @@
 package com.flowersAndGifts.command.impl;
 
-import com.flowersAndGifts.command.Command;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
-import com.flowersAndGifts.model.*;
+import com.flowersAndGifts.model.Address;
+import com.flowersAndGifts.model.Order;
+import com.flowersAndGifts.model.Page;
+import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.OrderService;
 import com.flowersAndGifts.service.impl.OrderServiceImpl;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+
+import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.sendRedirect;
+import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
+import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OrdersCommand implements Command {
     private final OrderService orderService = new OrderServiceImpl();
@@ -19,16 +25,17 @@ public class OrdersCommand implements Command {
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
 
         User user = (User) session.getAttribute("user");
-        if (Role.EMPLOYEE.compareTo(user.getRole()) != 0) {
-            throw new ControllerException("Only employee can be here.");
-        }
+        needToBeLoggedIn(user);
+        needToBeEmployee(user);
 
-        Order orderFilter = new Order(new Address(req.getParameter("country"), req.getParameter("address"), req.getParameter("city"), req.getParameter("postcode")));
+        Order orderFilter = new Order(new Address(
+                req.getParameter("country"),
+                req.getParameter("address"),
+                req.getParameter("city"),
+                req.getParameter("postcode")));
 
         String pageString = req.getParameter("page");
         int page = pageString == null ? 1 : Integer.parseInt(pageString);
@@ -43,28 +50,20 @@ public class OrdersCommand implements Command {
         session.setAttribute("allPages", orderPage.allPages());
         session.setAttribute("orders", orderPage.getElements());
 
-        try {
-            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
-        } catch (ServletException | IOException e) {
-            throw new ControllerException(e);
-        }
+        sendRequestDispatcher(req, resp);
     }
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
 
         User user = (User) session.getAttribute("user");
-        if (Role.EMPLOYEE.compareTo(user.getRole()) != 0) {
-            throw new ControllerException("Only employee can be here.");
-        }
+        needToBeLoggedIn(user);
+        needToBeEmployee(user);
 
-        Long id = Long.parseLong(req.getParameter("id"));
         Order order = new Order(new Address());
-        order.setId(id);
+        order.setId(Long.parseLong(isValidString(req.getParameter("id"), "id")));
         try {
             order = orderService.showOrder(order);
             order.setStatus(!order.getStatus());
@@ -73,6 +72,6 @@ public class OrdersCommand implements Command {
             throw new ControllerException(e);
         }
 
-        getProcess(req, resp);
+        sendRedirect(resp, "orders");
     }
 }

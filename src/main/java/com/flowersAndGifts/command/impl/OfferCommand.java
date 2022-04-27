@@ -1,6 +1,6 @@
 package com.flowersAndGifts.command.impl;
 
-import com.flowersAndGifts.command.Command;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
@@ -8,13 +8,15 @@ import com.flowersAndGifts.model.Product;
 import com.flowersAndGifts.service.ProductService;
 import com.flowersAndGifts.service.impl.ProductServiceImpl;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.flowersAndGifts.command.CommandHelper.sendRedirect;
+import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
+import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OfferCommand implements Command {
     ProductService productService = new ProductServiceImpl();
@@ -33,8 +35,7 @@ public class OfferCommand implements Command {
             throw new ControllerException(e);
         }
 
-        HttpSession session;
-        session = req.getSession(false);
+        HttpSession session = req.getSession(false);
         if (session == null) {
             session = req.getSession();
         }
@@ -43,18 +44,13 @@ public class OfferCommand implements Command {
         session.setAttribute("allPages", productPage.allPages());
         session.setAttribute("products", productPage.getElements());
 
-        try {
-            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
-        } catch (ServletException | IOException e) {
-            throw new ControllerException(e);
-        }
+        sendRequestDispatcher(req, resp);
     }
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        Long id = Long.parseLong(req.getParameter("id"));
-        HttpSession session;
-        session = req.getSession(false);
+        Long id = Long.parseLong(isValidString(req.getParameter("id"), "id"));
+        HttpSession session = req.getSession(false);
         if (session == null) {
             session = req.getSession();
         }
@@ -74,6 +70,6 @@ public class OfferCommand implements Command {
 
         session.setAttribute("cart", cart);
 
-        getProcess(req, resp);
+        sendRedirect(resp, "offer");
     }
 }

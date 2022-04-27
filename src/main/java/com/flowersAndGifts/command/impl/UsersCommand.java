@@ -1,6 +1,6 @@
 package com.flowersAndGifts.command.impl;
 
-import com.flowersAndGifts.command.Command;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
@@ -9,11 +9,12 @@ import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.UserService;
 import com.flowersAndGifts.service.impl.UserServiceImpl;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+
+import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 
 public class UsersCommand implements Command {
     private final UserService userService = new UserServiceImpl();
@@ -21,18 +22,14 @@ public class UsersCommand implements Command {
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
 
         User user = (User) session.getAttribute("user");
-        if (Role.ADMIN.compareTo(user.getRole()) != 0) {
-            throw new ControllerException("Only admin can be here.");
-        }
-
+        needToBeLoggedIn(user);
+        needToBeAdmin(user);
 
         String roleString = req.getParameter("role");
-        Role role = roleString==null || roleString.equals("all")?null:Role.valueOf(roleString.toUpperCase());
+        Role role = roleString == null || roleString.equals("all") || roleString.isEmpty() ? null : Role.valueOf(roleString.toUpperCase());
         User userFilter = new User(
                 req.getParameter("email"),
                 req.getParameter("firstname"),
@@ -41,7 +38,7 @@ public class UsersCommand implements Command {
         );
 
         String pageString = req.getParameter("page");
-        int page = pageString == null ? 1 : Integer.parseInt(pageString);
+        int page = pageString == null || pageString.isEmpty() ? 1 : Integer.parseInt(pageString);
 
         Page<User> userPage = new Page<>(page, 10, req.getParameter("sortBy"), req.getParameter("direction"), userFilter);
         try {
@@ -54,15 +51,11 @@ public class UsersCommand implements Command {
         session.setAttribute("allPages", userPage.allPages());
         session.setAttribute("users", userPage.getElements());
 
-        try {
-            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
-        } catch (ServletException | IOException e) {
-            throw new ControllerException(e);
-        }
+        sendRequestDispatcher(req, resp);
     }
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-//        getProcess(req, resp);
+
     }
 }

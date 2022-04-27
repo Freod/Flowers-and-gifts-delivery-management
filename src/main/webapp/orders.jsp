@@ -2,14 +2,15 @@
 <%@ taglib uri='http://java.sun.com/jsp/jstl/core' prefix='c' %>
 <html lang="en">
 <head>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders</title>
 </head>
 <body>
-<div>
-    <%@include file="navbar.jsp" %>
+<%@include file="navbar.jsp" %>
+<div class="content">
     <form method="get" action="orders">
         Country
         <input type="text" name="country">
@@ -65,7 +66,8 @@
     <c:forEach var="i" begin="1" end="${allPages}">
         <c:choose>
             <c:when test="${i==page}">${i}</c:when>
-            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a href="users?page=${i}">${i}</a></c:when>
+            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a
+                    href="users?page=${i}">${i}</a></c:when>
         </c:choose>
     </c:forEach>
 </div>

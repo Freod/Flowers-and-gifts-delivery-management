@@ -35,6 +35,7 @@ public class DatabaseConnection {
         return connection;
     }
 
+    //TODO:CONNECTION POOL
     private DatabaseConnection() {
         loadProperties();
         loadJbdcDriver();

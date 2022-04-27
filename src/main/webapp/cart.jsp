@@ -2,14 +2,15 @@
 <%@ taglib uri='http://java.sun.com/jsp/jstl/core' prefix='c' %>
 <html lang="en">
 <head>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
 </head>
 <body>
-<div>
-    <%@include file="navbar.jsp" %>
+<%@include file="navbar.jsp" %>
+<div class="content">
     <c:choose>
         <c:when test="${empty cart}"><h1>Your cart is empty</h1></c:when>
         <c:otherwise>

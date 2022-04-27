@@ -1,6 +1,7 @@
 <nav>
     <div>
         <ul>
+            <li><a href="index.jsp">Home</a></li>
             <c:if test="${user.role != 'ADMIN'}">
                 <li><a href="offer">Offer</a></li>
             </c:if>

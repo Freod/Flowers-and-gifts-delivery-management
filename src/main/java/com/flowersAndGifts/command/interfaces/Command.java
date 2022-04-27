@@ -1,4 +1,4 @@
-package com.flowersAndGifts.command;
+package com.flowersAndGifts.command.interfaces;
 
 import com.flowersAndGifts.exception.ControllerException;
 

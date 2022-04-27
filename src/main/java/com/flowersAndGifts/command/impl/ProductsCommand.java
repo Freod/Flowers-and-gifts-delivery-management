@@ -1,20 +1,20 @@
 package com.flowersAndGifts.command.impl;
 
-import com.flowersAndGifts.command.Command;
+import com.flowersAndGifts.command.interfaces.Command;
 import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
 import com.flowersAndGifts.model.Product;
-import com.flowersAndGifts.model.Role;
 import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.ProductService;
 import com.flowersAndGifts.service.impl.ProductServiceImpl;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+
+import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 
 public class ProductsCommand implements Command {
     private final ProductService productService = new ProductServiceImpl();
@@ -22,14 +22,11 @@ public class ProductsCommand implements Command {
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            throw new ControllerException("You must be logged in.");
-        }
+        checkSession(session);
 
         User user = (User) session.getAttribute("user");
-        if (Role.EMPLOYEE.compareTo(user.getRole()) != 0) {
-            throw new ControllerException("Only employee can be here.");
-        }
+        needToBeLoggedIn(user);
+        needToBeEmployee(user);
 
         Product productFilter = new Product();
         productFilter.setName(req.getParameter("name"));
@@ -47,25 +44,11 @@ public class ProductsCommand implements Command {
         session.setAttribute("allPages", productPage.allPages());
         session.setAttribute("products", productPage.getElements());
 
-        try {
-            req.getRequestDispatcher(req.getServletPath().substring(1) + ".jsp").forward(req, resp);
-        } catch (ServletException | IOException e) {
-            throw new ControllerException(e);
-        }
+        sendRequestDispatcher(req, resp);
     }
 
     @Override
     public void postProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            throw new ControllerException("You must be logged in.");
-        }
-
-        User user = (User) session.getAttribute("user");
-        if (Role.EMPLOYEE.compareTo(user.getRole()) != 0) {
-            throw new ControllerException("Only employee can be here.");
-        }
-
 
     }
 }
