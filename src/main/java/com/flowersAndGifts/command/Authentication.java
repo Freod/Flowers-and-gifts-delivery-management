@@ -26,13 +26,13 @@ public class Authentication {
     }
 
     public static void needToBeEmployee(final User user) throws ControllerException {
-        if (Role.EMPLOYEE.equals(user.getRole())) {
+        if (!Role.EMPLOYEE.equals(user.getRole())) {
             throw new ControllerException("Only employee can be here.");
         }
     }
 
     public static void needToBeAdmin(final User user) throws ControllerException {
-        if (Role.ADMIN.equals(user.getRole())) {
+        if (!Role.ADMIN.equals(user.getRole())) {
             throw new ControllerException("Only admin can be here.");
         }
     }
