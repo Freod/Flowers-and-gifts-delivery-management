@@ -1,5 +1,6 @@
 package com.flowersAndGifts.dao.impl;
 
+import com.flowersAndGifts.dao.DaoFactory;
 import com.flowersAndGifts.dao.OrderDao;
 import com.flowersAndGifts.dao.ProductDao;
 import com.flowersAndGifts.exception.DaoException;
@@ -279,7 +280,7 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
 
         Connection connection = getConnection();
         try {
-            ProductDao productDao = new ProductDaoImpl();
+            ProductDao productDao = DaoFactory.getInstance().getProductDao();
             for (ProductOrder productOrder : order.getProductOrder()) {
                 productDao.selectProductById(productOrder.getProduct().getId());
             }

@@ -2,7 +2,6 @@ package com.flowersAndGifts.dao.impl;
 
 import com.flowersAndGifts.database.ConnectionPool;
 import com.flowersAndGifts.database.ConnectionPoolImpl;
-import com.flowersAndGifts.database.DatabaseConfig;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.model.Role;
 

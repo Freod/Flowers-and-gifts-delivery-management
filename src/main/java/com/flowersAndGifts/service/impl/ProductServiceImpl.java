@@ -1,7 +1,7 @@
 package com.flowersAndGifts.service.impl;
 
+import com.flowersAndGifts.dao.DaoFactory;
 import com.flowersAndGifts.dao.ProductDao;
-import com.flowersAndGifts.dao.impl.ProductDaoImpl;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
@@ -9,7 +9,7 @@ import com.flowersAndGifts.model.Product;
 import com.flowersAndGifts.service.ProductService;
 
 public class ProductServiceImpl implements ProductService {
-    ProductDao productDao = new ProductDaoImpl();
+    private final ProductDao productDao = DaoFactory.getInstance().getProductDao();
 
     @Override
     public Product takeProduct(Product product) throws ServiceException {

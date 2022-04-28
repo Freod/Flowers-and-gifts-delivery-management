@@ -1,7 +1,7 @@
 package com.flowersAndGifts.service.impl;
 
+import com.flowersAndGifts.dao.DaoFactory;
 import com.flowersAndGifts.dao.UserDao;
-import com.flowersAndGifts.dao.impl.UserDaoImpl;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
@@ -9,7 +9,7 @@ import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.UserService;
 
 public class UserServiceImpl implements UserService {
-    UserDao userDao = new UserDaoImpl();
+    private final UserDao userDao = DaoFactory.getInstance().getUserDao();
 
     @Override
     public User login(User user) throws ServiceException {

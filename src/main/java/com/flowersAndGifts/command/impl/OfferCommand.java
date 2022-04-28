@@ -6,7 +6,7 @@ import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Page;
 import com.flowersAndGifts.model.Product;
 import com.flowersAndGifts.service.ProductService;
-import com.flowersAndGifts.service.impl.ProductServiceImpl;
+import com.flowersAndGifts.service.ServiceFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,7 +18,7 @@ import static com.flowersAndGifts.command.CommandHelper.*;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OfferCommand implements Command {
-    ProductService productService = new ProductServiceImpl();
+    private final ProductService productService = ServiceFactory.getInstance().getProductService();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {

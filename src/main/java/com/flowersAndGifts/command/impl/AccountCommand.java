@@ -5,7 +5,7 @@ import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.*;
 import com.flowersAndGifts.service.OrderService;
-import com.flowersAndGifts.service.impl.OrderServiceImpl;
+import com.flowersAndGifts.service.ServiceFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +17,7 @@ import static com.flowersAndGifts.command.CommandHelper.getPage;
 import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 
 public class AccountCommand implements Command {
-    private final OrderService orderService = new OrderServiceImpl();
+    private final OrderService orderService = ServiceFactory.getInstance().getOrderService();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {

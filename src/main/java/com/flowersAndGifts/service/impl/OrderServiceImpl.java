@@ -1,7 +1,7 @@
 package com.flowersAndGifts.service.impl;
 
+import com.flowersAndGifts.dao.DaoFactory;
 import com.flowersAndGifts.dao.OrderDao;
-import com.flowersAndGifts.dao.impl.OrderDaoImpl;
 import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Order;
@@ -10,7 +10,7 @@ import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.OrderService;
 
 public class OrderServiceImpl implements OrderService {
-    OrderDao orderDao = new OrderDaoImpl();
+    private final OrderDao orderDao = DaoFactory.getInstance().getOrderDao();
 
     @Override
     public Order showOrder(Order order) throws ServiceException {

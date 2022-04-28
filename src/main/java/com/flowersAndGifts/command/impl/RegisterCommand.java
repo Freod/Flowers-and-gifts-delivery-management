@@ -5,8 +5,8 @@ import com.flowersAndGifts.exception.ControllerException;
 import com.flowersAndGifts.exception.ServiceException;
 import com.flowersAndGifts.model.Role;
 import com.flowersAndGifts.model.User;
+import com.flowersAndGifts.service.ServiceFactory;
 import com.flowersAndGifts.service.UserService;
-import com.flowersAndGifts.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,7 +18,7 @@ import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class RegisterCommand implements Command {
-    private final UserService userService = new UserServiceImpl();
+    private final UserService userService = ServiceFactory.getInstance().getUserService();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {

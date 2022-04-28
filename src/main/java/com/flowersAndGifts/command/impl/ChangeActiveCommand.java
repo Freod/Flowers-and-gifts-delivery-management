@@ -7,9 +7,8 @@ import com.flowersAndGifts.model.Product;
 import com.flowersAndGifts.model.Role;
 import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.ProductService;
+import com.flowersAndGifts.service.ServiceFactory;
 import com.flowersAndGifts.service.UserService;
-import com.flowersAndGifts.service.impl.ProductServiceImpl;
-import com.flowersAndGifts.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,8 +20,8 @@ import static com.flowersAndGifts.command.CommandHelper.sendRedirect;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class ChangeActiveCommand implements Command {
-    private final UserService userService = new UserServiceImpl();
-    private final ProductService productService = new ProductServiceImpl();
+    private final UserService userService = ServiceFactory.getInstance().getUserService();
+    private final ProductService productService = ServiceFactory.getInstance().getProductService();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {

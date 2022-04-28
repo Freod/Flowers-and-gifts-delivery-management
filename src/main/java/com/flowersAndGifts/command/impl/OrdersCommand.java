@@ -8,7 +8,7 @@ import com.flowersAndGifts.model.Order;
 import com.flowersAndGifts.model.Page;
 import com.flowersAndGifts.model.User;
 import com.flowersAndGifts.service.OrderService;
-import com.flowersAndGifts.service.impl.OrderServiceImpl;
+import com.flowersAndGifts.service.ServiceFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +19,7 @@ import static com.flowersAndGifts.command.CommandHelper.*;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OrdersCommand implements Command {
-    private final OrderService orderService = new OrderServiceImpl();
+    private final OrderService orderService = ServiceFactory.getInstance().getOrderService();
 
     @Override
     public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ControllerException {
