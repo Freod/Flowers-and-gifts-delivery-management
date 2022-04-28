@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.getPage;
 import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 
 public class ProductsCommand implements Command {
@@ -31,9 +32,7 @@ public class ProductsCommand implements Command {
         Product productFilter = new Product();
         productFilter.setName(req.getParameter("name"));
 
-        String pageString = req.getParameter("page");
-        int page = pageString == null ? 1 : Integer.parseInt(pageString);
-        Page<Product> productPage = new Page<>(page, 10, req.getParameter("sortBy"), req.getParameter("direction"), productFilter);
+        Page<Product> productPage = new Page<>(getPage(req), 10, req.getParameter("sortBy"), req.getParameter("direction"), productFilter);
         try {
             productPage = productService.allProductsByPage(productPage);
         } catch (ServiceException e) {

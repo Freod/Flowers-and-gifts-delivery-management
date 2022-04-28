@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import static com.flowersAndGifts.command.Authentication.*;
+import static com.flowersAndGifts.command.CommandHelper.getPage;
 import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
 
 public class UsersCommand implements Command {
@@ -37,10 +38,7 @@ public class UsersCommand implements Command {
                 role
         );
 
-        String pageString = req.getParameter("page");
-        int page = pageString == null || pageString.isEmpty() ? 1 : Integer.parseInt(pageString);
-
-        Page<User> userPage = new Page<>(page, 10, req.getParameter("sortBy"), req.getParameter("direction"), userFilter);
+        Page<User> userPage = new Page<>(getPage(req), 10, req.getParameter("sortBy"), req.getParameter("direction"), userFilter);
         try {
             userPage = userService.allUsersByPage(userPage);
         } catch (ServiceException e) {

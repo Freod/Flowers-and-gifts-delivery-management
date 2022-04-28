@@ -30,7 +30,7 @@ public class AccountCommand implements Command {
         if (user.getRole().equals(Role.CUSTOMER)) {
             Page<Order> orderPage = new Page<>(
                     getPage(req),
-                    8,
+                    10,
                     req.getParameter("sortBy"),
                     req.getParameter("direction"),
                     new Order(new Address(

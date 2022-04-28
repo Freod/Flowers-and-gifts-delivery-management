@@ -44,13 +44,13 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
             " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " AND o.send = false";
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')";
     private static final String COUNT_PAGE_ORDERS_UNSENT_QUERY = "SELECT count(o.id) FROM ORDERS o " +
             " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(o.city) LIKE CONCAT('%%', UPPER(?), '%%')" +
-            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')";
+            " AND UPPER(o.postcode) LIKE CONCAT('%%', UPPER(?), '%%')"+
+            " AND o.send = false";
     private static final String COUNT_PAGE_ORDERS_BY_USER_ID_QUERY = "SELECT count(o.id) FROM ORDERS o " +
             " WHERE UPPER(o.country) LIKE CONCAT('%%', UPPER(?), '%%')" +
             " AND UPPER(o.address) LIKE CONCAT('%%', UPPER(?), '%%')" +

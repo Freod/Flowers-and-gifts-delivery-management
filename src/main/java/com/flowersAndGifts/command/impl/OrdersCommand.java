@@ -15,8 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import static com.flowersAndGifts.command.Authentication.*;
-import static com.flowersAndGifts.command.CommandHelper.sendRedirect;
-import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
+import static com.flowersAndGifts.command.CommandHelper.*;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OrdersCommand implements Command {
@@ -37,9 +36,7 @@ public class OrdersCommand implements Command {
                 req.getParameter("city"),
                 req.getParameter("postcode")));
 
-        String pageString = req.getParameter("page");
-        int page = pageString == null ? 1 : Integer.parseInt(pageString);
-        Page<Order> orderPage = new Page<>(page, 8, req.getParameter("sortBy"), req.getParameter("direction"), orderFilter);
+        Page<Order> orderPage = new Page<>(getPage(req), 8, req.getParameter("sortBy"), req.getParameter("direction"), orderFilter);
         try {
             orderPage= orderService.allUnsentOrdersByPage(orderPage);
         } catch (ServiceException e) {

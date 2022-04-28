@@ -14,8 +14,7 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.flowersAndGifts.command.CommandHelper.sendRedirect;
-import static com.flowersAndGifts.command.CommandHelper.sendRequestDispatcher;
+import static com.flowersAndGifts.command.CommandHelper.*;
 import static com.flowersAndGifts.validator.ControllerValidator.isValidString;
 
 public class OfferCommand implements Command {
@@ -26,9 +25,7 @@ public class OfferCommand implements Command {
         Product productFilter = new Product();
         productFilter.setName(req.getParameter("name"));
 
-        String pageString = req.getParameter("page");
-        int page = pageString == null ? 1 : Integer.parseInt(pageString);
-        Page<Product> productPage = new Page<>(page, 6, req.getParameter("sortBy"), req.getParameter("direction"), productFilter);
+        Page<Product> productPage = new Page<>(getPage(req), 8, req.getParameter("sortBy"), req.getParameter("direction"), productFilter);
         try {
             productPage = productService.allActiveProductsByPage(productPage);
         } catch (ServiceException e) {

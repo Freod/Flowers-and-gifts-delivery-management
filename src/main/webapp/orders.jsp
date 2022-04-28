@@ -66,8 +66,7 @@
     <c:forEach var="i" begin="1" end="${allPages}">
         <c:choose>
             <c:when test="${i==page}">${i}</c:when>
-            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a
-                    href="users?page=${i}">${i}</a></c:when>
+            <c:when test="${i==1 || i==allPages || i==page-2 || i==page-1 || i==page+1 || i==page+2}"><a href="orders?page=${i}">${i}</a></c:when>
         </c:choose>
     </c:forEach>
 </div>
