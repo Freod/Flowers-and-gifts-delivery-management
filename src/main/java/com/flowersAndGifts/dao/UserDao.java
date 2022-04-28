@@ -13,9 +13,9 @@ public interface UserDao {
 
     User selectUserByEmailAndPassword(String email, String password) throws DaoException;
 
-    List<User> selectAllUsers();
+    List<User> selectAllUsers() throws DaoException;
 
-    Page<User> selectPageUsers(Page<User> page);
+    Page<User> selectPageUsers(Page<User> page) throws DaoException;
 
     User insertUser(User user) throws DaoException;
 

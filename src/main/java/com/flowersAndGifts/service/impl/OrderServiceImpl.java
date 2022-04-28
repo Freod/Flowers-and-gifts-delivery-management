@@ -41,16 +41,28 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<Order> allOrdersByPage(Page<Order> page) throws ServiceException {
-        return orderDao.selectPageOrders(page);
+        try {
+            return orderDao.selectPageOrders(page);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 
     @Override
     public Page<Order> allUnsentOrdersByPage(Page<Order> page) throws ServiceException {
-        return orderDao.selectPageUnsentOrders(page);
+        try {
+            return orderDao.selectPageUnsentOrders(page);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 
     @Override
     public Page<Order> allOrdersByPageAndUserId(Page<Order> page, User user) throws ServiceException {
-        return orderDao.selectPageOrdersByUserId(page, user.getId());
+        try {
+            return orderDao.selectPageOrdersByUserId(page, user.getId());
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 }

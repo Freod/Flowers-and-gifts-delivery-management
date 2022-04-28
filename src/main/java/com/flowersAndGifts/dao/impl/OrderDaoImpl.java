@@ -107,25 +107,25 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
     }
 
     @Override
-    public List<Order> selectAllOrders() {
+    public List<Order> selectAllOrders() throws DaoException {
         return getAllOrders(SELECT_ALL_ORDERS_QUERY, new ArrayList<>());
     }
 
     @Override
-    public List<Order> selectAllUnsentOrders() {
+    public List<Order> selectAllUnsentOrders() throws DaoException {
         return getAllOrders(SELECT_ALL_ORDERS_UNSENT_QUERY, Collections.singletonList(false));
     }
 
     @Override
-    public List<Order> selectAllOrdersByUserId(Long id) {
+    public List<Order> selectAllOrdersByUserId(Long id) throws DaoException {
         return getAllOrders(SELECT_ALL_ORDERS_BY_USER_ID_QUERY, Collections.singletonList(id));
     }
 
-    private List<Order> getAllOrders(String selectAllOrdersQuery, List<Object> parameters) {
+    private List<Order> getAllOrders(String selectAllOrdersQuery, List<Object> parameters) throws DaoException {
         List<Order> orders = new ArrayList<>();
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectAllOrdersPreparedStatement = getPreparedStatement(connection, selectAllOrdersQuery, parameters);
+        Connection connection = getConnection();
+        try (PreparedStatement selectAllOrdersPreparedStatement = getPreparedStatement(connection, selectAllOrdersQuery, parameters);
              ResultSet selectAllOrdersResultSet = selectAllOrdersPreparedStatement.executeQuery()
         ) {
             while (selectAllOrdersResultSet.next()) {
@@ -145,28 +145,30 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
             }
             getOrderWithProducts(connection, orders);
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return orders;
     }
 
     @Override
-    public Page<Order> selectPageOrders(Page<Order> page) {
+    public Page<Order> selectPageOrders(Page<Order> page) throws DaoException {
         return getPageOrders(SELECT_PAGE_ORDERS_QUERY, COUNT_PAGE_ORDERS_QUERY, page, null);
     }
 
     @Override
-    public Page<Order> selectPageUnsentOrders(Page<Order> page) {
+    public Page<Order> selectPageUnsentOrders(Page<Order> page) throws DaoException {
         return getPageOrders(SELECT_PAGE_ORDERS_UNSENT_QUERY, COUNT_PAGE_ORDERS_UNSENT_QUERY, page, null);
     }
 
     @Override
-    public Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id) {
+    public Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id) throws DaoException {
         return getPageOrders(SELECT_PAGE_ORDERS_BY_USER_ID_QUERY, COUNT_PAGE_ORDERS_BY_USER_ID_QUERY, page, id);
     }
 
-    private Page<Order> getPageOrders(String selectPageOrdersQuery, String countPageOrdersQuery, Page<Order> page, Long id) {
+    private Page<Order> getPageOrders(String selectPageOrdersQuery, String countPageOrdersQuery, Page<Order> page, Long id) throws DaoException {
         List<Object> parameters;
         List<Object> parameters2;
 
@@ -204,8 +206,8 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
             );
         }
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters);
+        Connection connection = getConnection();
+        try (PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = preparedStatement.executeQuery();
              PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(countPageOrdersQuery, page.getSortBy(), page.getDirection()), parameters2);
              ResultSet countResultSet = countPreparedStatement.executeQuery()
@@ -227,12 +229,14 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 orders.add(order);
             }
             getOrderWithProducts(connection, orders);
-            if(countResultSet.next()){
+            if (countResultSet.next()) {
                 page.setTotalElements(countResultSet.getLong(1));
             }
             page.setElements(orders);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DaoException(e);
+        } finally {
+            closeConnection(connection);
         }
         return page;
     }
@@ -273,7 +277,8 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 order.getStatus()
         );
 
-        try (Connection connection = getConnection()) {
+        Connection connection = getConnection();
+        try {
             ProductDao productDao = new ProductDaoImpl();
             for (ProductOrder productOrder : order.getProductOrder()) {
                 productDao.selectProductById(productOrder.getProduct().getId());
@@ -298,7 +303,9 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DaoException(e);
+        } finally {
+            closeConnection(connection);
         }
 
         return order;
@@ -316,8 +323,8 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 order.getId()
         );
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(order.getId()));
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_ORDER_BY_ID_QUERY, Collections.singletonList(order.getId()));
              ResultSet selectResultSet = selectPreparedStatement.executeQuery()
         ) {
             if (selectResultSet.next()) {
@@ -328,7 +335,9 @@ public class OrderDaoImpl extends AbstractDao implements OrderDao {
                 throw new DaoException("Order with this id does not exits.");
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DaoException(e);
+        } finally {
+            closeConnection(connection);
         }
         return order;
     }

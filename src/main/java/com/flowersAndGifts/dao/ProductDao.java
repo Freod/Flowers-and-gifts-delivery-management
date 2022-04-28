@@ -11,13 +11,13 @@ public interface ProductDao {
 
     Product selectProductByName(String name) throws DaoException;
 
-    List<Product> selectAllProducts();
+    List<Product> selectAllProducts() throws DaoException;
 
-    List<Product> selectAllActiveProducts();
+    List<Product> selectAllActiveProducts() throws DaoException;
 
-    Page<Product> selectPageProducts(Page<Product> page);
+    Page<Product> selectPageProducts(Page<Product> page) throws DaoException;
 
-    Page<Product> selectPageActiveProducts(Page<Product> page);
+    Page<Product> selectPageActiveProducts(Page<Product> page) throws DaoException;
 
     Product insertProduct(Product product) throws DaoException;
 

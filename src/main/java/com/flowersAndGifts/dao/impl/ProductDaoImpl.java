@@ -45,8 +45,8 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
     private Product getProduct(String selectProductQuery, List<Object> parameter) throws DaoException {
         Product product;
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectProductQuery, parameter);
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectProductQuery, parameter);
              ResultSet selectResultSet = selectPreparedStatement.executeQuery()
         ) {
             if (selectResultSet.next()) {
@@ -65,27 +65,29 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 }
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return product;
     }
 
     @Override
-    public List<Product> selectAllProducts() {
+    public List<Product> selectAllProducts() throws DaoException {
         return getAllProducts(SELECT_ALL_PRODUCTS_QUERY);
     }
 
     @Override
-    public List<Product> selectAllActiveProducts() {
+    public List<Product> selectAllActiveProducts() throws DaoException {
         return getAllProducts(SELECT_ALL_ACTIVE_PRODUCTS_QUERY);
     }
 
-    private List<Product> getAllProducts(String selectAllProductsQuery) {
+    private List<Product> getAllProducts(String selectAllProductsQuery) throws DaoException {
         List<Product> products = new ArrayList<>();
 
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
+        Connection connection = getConnection();
+        try (Statement statement = connection.createStatement();
              ResultSet selectResultSet = statement.executeQuery(selectAllProductsQuery)
         ) {
             while (selectResultSet.next()) {
@@ -100,31 +102,33 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 products.add(product);
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return products;
     }
 
     @Override
-    public Page<Product> selectPageProducts(Page<Product> page) {
+    public Page<Product> selectPageProducts(Page<Product> page) throws DaoException {
         return getPageProducts(SELECT_PAGE_PRODUCTS_QUERY, COUNT_PAGE_PRODUCTS_QUERY, page);
     }
 
     @Override
-    public Page<Product> selectPageActiveProducts(Page<Product> page) {
+    public Page<Product> selectPageActiveProducts(Page<Product> page) throws DaoException {
         return getPageProducts(SELECT_PAGE_ACTIVE_PRODUCTS_QUERY, COUNT_PAGE_ACTIVE_PRODUCTS_QUERY, page);
     }
 
-    private Page<Product> getPageProducts(String selectPageProductsQuery, String countPageProductsQuery, Page<Product> page) {
+    private Page<Product> getPageProducts(String selectPageProductsQuery, String countPageProductsQuery, Page<Product> page) throws DaoException {
         List<Object> parameters = Arrays.asList(
                 page.getFilter().getName(),
                 page.getPageSize(),
                 page.getOffset()
         );
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageProductsQuery, page.getSortBy(), page.getDirection()), parameters);
+        Connection connection = getConnection();
+        try (PreparedStatement preparedStatement = getPreparedStatement(connection, setSortAndDirection(selectPageProductsQuery, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = preparedStatement.executeQuery();
              PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(countPageProductsQuery, page.getSortBy(), page.getDirection()), Collections.singletonList(page.getFilter().getName()));
              ResultSet countResultSet = countPreparedStatement.executeQuery()
@@ -140,12 +144,14 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 );
                 products.add(product);
             }
-            if(countResultSet.next()) {
+            if (countResultSet.next()) {
                 page.setTotalElements(countResultSet.getLong(1));
             }
             page.setElements(products);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DaoException(e);
+        } finally {
+            closeConnection(connection);
         }
         return page;
     }
@@ -159,8 +165,8 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 product.isActive()
         );
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()));
+        Connection connection = getConnection();
+        try (PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()));
              ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery();
              PreparedStatement insertPreparedStatement = getPreparedStatement(connection, INSERT_PRODUCT_QUERY, parameters)
         ) {
@@ -173,9 +179,10 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
             } else {
                 throw new DaoException("Product with this name does already exist.");
             }
-        } catch (
-                SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException exception) {
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return product;
@@ -190,25 +197,20 @@ public class ProductDaoImpl extends AbstractDao implements ProductDao {
                 product.getId()
         );
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_ID_QUERY, Collections.singletonList(product.getId()));
-//             PreparedStatement selectNamePreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_NAME_QUERY, Collections.singletonList(product.getName()));
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_PRODUCT_BY_ID_QUERY, Collections.singletonList(product.getId()));
              ResultSet selectResultSet = selectPreparedStatement.executeQuery();
-//             ResultSet selectNameResultSet = selectNamePreparedStatement.executeQuery();
              PreparedStatement updatePreparedStatement = getPreparedStatement(connection, UPDATE_PRODUCT_QUERY, parameters)
         ) {
             if (selectResultSet.next()) {
-//                if (!selectNameResultSet.next()) {
-                    updatePreparedStatement.execute();
-//                } else {
-//                    throw new DaoException("Product with this name does already exist.");
-//                }
+                updatePreparedStatement.execute();
             } else {
                 throw new DaoException("Product with this id does not exist.");
             }
-        } catch (
-                SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException exception) {
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return product;

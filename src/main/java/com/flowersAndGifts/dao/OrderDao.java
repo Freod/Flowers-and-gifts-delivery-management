@@ -9,17 +9,17 @@ import java.util.List;
 public interface OrderDao {
     Order selectOrderById(Long id) throws DaoException;
 
-    List<Order> selectAllOrders();
+    List<Order> selectAllOrders() throws DaoException;
 
-    List<Order> selectAllUnsentOrders();
+    List<Order> selectAllUnsentOrders() throws DaoException;
 
-    List<Order> selectAllOrdersByUserId(Long id);
+    List<Order> selectAllOrdersByUserId(Long id) throws DaoException;
 
-    Page<Order> selectPageOrders(Page<Order> page);
+    Page<Order> selectPageOrders(Page<Order> page) throws DaoException;
 
-    Page<Order> selectPageUnsentOrders(Page<Order> page);
+    Page<Order> selectPageUnsentOrders(Page<Order> page) throws DaoException;
 
-    Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id);
+    Page<Order> selectPageOrdersByUserId(Page<Order> page, Long id) throws DaoException;
 
     Order insertOrder(Order order) throws DaoException;
 

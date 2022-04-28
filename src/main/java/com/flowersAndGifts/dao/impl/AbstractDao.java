@@ -1,6 +1,9 @@
 package com.flowersAndGifts.dao.impl;
 
-import com.flowersAndGifts.database.DatabaseConnection;
+import com.flowersAndGifts.database.ConnectionPool;
+import com.flowersAndGifts.database.ConnectionPoolImpl;
+import com.flowersAndGifts.database.DatabaseConfig;
+import com.flowersAndGifts.exception.DaoException;
 import com.flowersAndGifts.model.Role;
 
 import java.sql.Connection;
@@ -9,10 +12,14 @@ import java.sql.SQLException;
 import java.util.List;
 
 public abstract class AbstractDao {
-    private final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
+    private final ConnectionPool connectionPool = ConnectionPoolImpl.getInstance();
 
-    protected Connection getConnection() throws SQLException {
-        return databaseConnection.createConnection();
+    protected Connection getConnection() throws DaoException {
+        return connectionPool.takeConnection();
+    }
+
+    protected void closeConnection(Connection connection){
+        connectionPool.retrieveConnection(connection);
     }
 
     protected PreparedStatement getPreparedStatement(final Connection connection, final String query, final List<Object> parameters) throws SQLException {
