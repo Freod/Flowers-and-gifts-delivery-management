@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class DatabaseConnection {
+public class DatabaseConfig {
     private Properties properties = new Properties();
     private static final String DATABASE_CONFIG_PATH = "database/db.properties";
     private static final String
@@ -24,19 +24,7 @@ public class DatabaseConnection {
             PASSWORD = "database.password";
     private boolean driverLoaded = false;
 
-    private static final DatabaseConnection instance = new DatabaseConnection();
-
-    public static DatabaseConnection getInstance() {
-        return instance;
-    }
-
-    public Connection createConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection(getProperty(URL) + getProperty(DATABASE_NAME) + "?" + getProperty(SCHEMA), getProperty(USERNAME), getProperty(PASSWORD));
-        return connection;
-    }
-
-    //TODO:CONNECTION POOL
-    private DatabaseConnection() {
+    public DatabaseConfig() {
         loadProperties();
         loadJbdcDriver();
         try {
@@ -49,6 +37,11 @@ public class DatabaseConnection {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Connection createConnection() throws SQLException {
+        Connection connection = DriverManager.getConnection(getProperty(URL) + getProperty(DATABASE_NAME) + "?" + getProperty(SCHEMA), getProperty(USERNAME), getProperty(PASSWORD));
+        return connection;
     }
 
     private void loadJbdcDriver() {
@@ -66,13 +59,13 @@ public class DatabaseConnection {
         return new BufferedReader(
                 new InputStreamReader(
                         Objects.requireNonNull(
-                                DatabaseConnection.class.getClassLoader().getResourceAsStream(resourceName))))
+                                DatabaseConfig.class.getClassLoader().getResourceAsStream(resourceName))))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
 
     private void loadProperties() {
-        try (InputStream inputStream = DatabaseConnection.class.getClassLoader().getResourceAsStream(DATABASE_CONFIG_PATH)) {
+        try (InputStream inputStream = DatabaseConfig.class.getClassLoader().getResourceAsStream(DATABASE_CONFIG_PATH)) {
             properties = new Properties();
             properties.load(inputStream);
         } catch (IOException e) {

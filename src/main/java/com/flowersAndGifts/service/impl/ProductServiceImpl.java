@@ -40,11 +40,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<Product> allProductsByPage(Page<Product> page) throws ServiceException {
-        return productDao.selectPageProducts(page);
+        try {
+            return productDao.selectPageProducts(page);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 
     @Override
     public Page<Product> allActiveProductsByPage(Page<Product> page) throws ServiceException {
-        return productDao.selectPageActiveProducts(page);
+        try {
+            return productDao.selectPageActiveProducts(page);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 }

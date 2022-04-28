@@ -53,8 +53,8 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
 
     private User getUser(String selectUserQuery, List<Object> parameter) throws DaoException {
         User user;
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectUserQuery, parameter);
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectUserQuery, parameter);
              ResultSet selectResultSet = selectPreparedStatement.executeQuery()
         ) {
             if (selectResultSet.next()) {
@@ -75,18 +75,20 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
 
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return user;
     }
 
     @Override
-    public List<User> selectAllUsers() {
+    public List<User> selectAllUsers() throws DaoException {
         List<User> users = new ArrayList<>();
 
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
+        Connection connection = getConnection();
+        try (Statement statement = connection.createStatement();
              ResultSet selectResultSet = statement.executeQuery(SELECT_ALL_USERS_QUERY)
         ) {
             while (selectResultSet.next()) {
@@ -101,14 +103,16 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 users.add(user);
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return users;
     }
 
     @Override
-    public Page<User> selectPageUsers(Page<User> page) {
+    public Page<User> selectPageUsers(Page<User> page) throws DaoException {
         List<Object> parameters = Arrays.asList(
                 page.getFilter().getEmail(),
                 page.getFilter().getFirstname(),
@@ -123,10 +127,10 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 page.getFilter().getFirstname(),
                 page.getFilter().getLastname(),
                 page.getFilter().getRole()
-                );
+        );
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, setSortAndDirection(SELECT_PAGE_USERS_QUERY, page.getSortBy(), page.getDirection()), parameters);
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, setSortAndDirection(SELECT_PAGE_USERS_QUERY, page.getSortBy(), page.getDirection()), parameters);
              ResultSet selectResultSet = selectPreparedStatement.executeQuery();
              PreparedStatement countPreparedStatement = getPreparedStatement(connection, setSortAndDirection(COUNT_PAGE_USERS_QUERY, page.getSortBy(), page.getDirection()), parameters2);
              ResultSet countResultSet = countPreparedStatement.executeQuery()
@@ -143,12 +147,14 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 );
                 users.add(user);
             }
-            if(countResultSet.next()){
+            if (countResultSet.next()) {
                 page.setTotalElements(countResultSet.getLong(1));
             }
             page.setElements(users);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DaoException(e);
+        } finally {
+            closeConnection(connection);
         }
         return page;
     }
@@ -164,8 +170,8 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 user.getActive()
         );
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_USER_BY_EMAIL_QUERY, Collections.singletonList(user.getEmail()));
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_USER_BY_EMAIL_QUERY, Collections.singletonList(user.getEmail()));
              ResultSet selectResultSet = selectPreparedStatement.executeQuery();
              PreparedStatement insertPreparedStatement = getPreparedStatement(connection, INSERT_USER_QUERY, parameters)
         ) {
@@ -179,7 +185,9 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 throw new DaoException("User with this email does already exist.");
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return user;
@@ -203,8 +211,8 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
     private User updateUser(String updateUserQuery, List<Object> parameters) throws DaoException {
         User user;
 
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_USER_BY_EMAIL_QUERY, Collections.singletonList(parameters.get(1)));
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, SELECT_USER_BY_EMAIL_QUERY, Collections.singletonList(parameters.get(1)));
              ResultSet selectResultSet = selectPreparedStatement.executeQuery();
              PreparedStatement updatePreparedStatement = getPreparedStatement(connection, updateUserQuery, parameters)
         ) {
@@ -215,7 +223,9 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                 throw new DaoException("User with this email does not exist.");
             }
         } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
 
         return user;
@@ -232,8 +242,8 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
     }
 
     private void deleteUser(String selectUserQuery, String deleteUserQuery, List<Object> parameter) throws DaoException {
-        try (Connection connection = getConnection();
-             PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectUserQuery, parameter);
+        Connection connection = getConnection();
+        try (PreparedStatement selectPreparedStatement = getPreparedStatement(connection, selectUserQuery, parameter);
              ResultSet resultSet = selectPreparedStatement.executeQuery()
         ) {
             if (resultSet.next()) {
@@ -247,9 +257,10 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
                     throw new DaoException("User with this email does not exist.");
                 }
             }
-        } catch (
-                SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException exception) {
+            throw new DaoException(exception);
+        } finally {
+            closeConnection(connection);
         }
     }
 }

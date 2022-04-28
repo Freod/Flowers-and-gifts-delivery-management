@@ -21,7 +21,7 @@ public class UserDaoTests {
         //TODO:SET TEST DB
         userDao = new UserDaoImpl();
     }
-    
+
     @Test
     public void testUserDao() throws Exception {
         List<User> expectedList1 = userDao.selectAllUsers();
