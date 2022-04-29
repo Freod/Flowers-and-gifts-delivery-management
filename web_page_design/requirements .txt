@@ -1,0 +1,1 @@
+It is a register form. Users can use it to create own accounts. It have a simple css and with use js users can check correct of their password.
